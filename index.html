@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -393,6 +394,62 @@
                 <div class="flex justify-end gap-3">
                     <button id="modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 rounded font-bold text-sm">キャンセル</button>
                     <button id="modal-ok" class="px-4 py-2 bg-red-600 text-white rounded font-bold text-sm">実行</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Edit Modal (履歴編集モーダル) -->
+    <div id="record-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 px-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="record-edit-modal-content">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="text-md font-bold text-gray-800" id="record-modal-title">記録の編集</h3>
+                <button onclick="closeEditRecordModal()" class="text-gray-500 hover:text-gray-800"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-4 space-y-4">
+                <input type="hidden" id="edit-record-type">
+                <input type="hidden" id="edit-record-product">
+                <input type="hidden" id="edit-record-index">
+
+                <!-- History Fields -->
+                <div id="edit-history-fields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">日付</label>
+                        <input type="date" id="edit-history-date" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">買取相場 (円)</label>
+                        <input type="number" id="edit-history-price" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">店舗 (任意)</label>
+                        <input type="text" id="edit-history-store" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- Sale Fields -->
+                <div id="edit-sale-fields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">日付</label>
+                        <input type="date" id="edit-sale-date" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-red-500">
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="w-1/3">
+                            <label class="block text-xs font-bold text-gray-600 mb-1">個数</label>
+                            <input type="number" id="edit-sale-qty" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-600 mb-1">売却単価 (円)</label>
+                            <input type="number" id="edit-sale-price" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-red-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="deleteEditRecord()" class="bg-gray-100 text-red-600 border border-gray-200 py-2 px-3 rounded font-bold text-sm hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i> 削除</button>
+                    <div class="flex-1"></div>
+                    <button onclick="closeEditRecordModal()" class="bg-gray-300 text-gray-800 py-2 px-4 rounded font-bold text-sm">キャンセル</button>
+                    <button onclick="saveEditRecord()" class="bg-blue-600 text-white py-2 px-4 rounded font-bold text-sm">保存</button>
                 </div>
             </div>
         </div>
@@ -1168,11 +1225,37 @@
                 const assetPrice = currentPrice > 0 ? currentPrice : purPrice;
                 const assetValue = item.quantity * assetPrice;
 
+                let historyHtml = '';
+                if(item.history && item.history.length > 0) {
+                    historyHtml = '<div class="mt-3 bg-blue-50 p-2 rounded text-xs space-y-1 max-h-32 overflow-y-auto"><div class="font-bold text-blue-600 mb-1 border-b border-blue-200 pb-1">相場履歴</div>';
+                    [...item.history].reverse().forEach((h, revIdx) => {
+                        const originalIdx = item.history.length - 1 - revIdx;
+                        const storeText = h.store ? `<span class="text-gray-500 ml-1 truncate inline-block align-bottom max-w-[80px]">@${h.store}</span>` : '';
+                        const safeName = name.replace(/'/g, "\\'");
+                        historyHtml += `<div class="flex justify-between items-center text-gray-700 hover:bg-blue-100 p-1 -mx-1 rounded transition-colors group">
+                            <div class="flex-1 truncate"><span>${h.date}</span> ${storeText}</div>
+                            <div class="flex items-center gap-1 pl-2">
+                                <span class="font-bold">¥${h.price.toLocaleString()}</span>
+                                <button onclick="openEditRecordModal('${safeName}', 'history', ${originalIdx})" class="text-blue-300 hover:text-blue-600 px-2 py-1"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>`;
+                    });
+                    historyHtml += '</div>';
+                }
+
                 let salesHtml = '';
                 if(item.sales && item.sales.length > 0) {
-                    salesHtml = '<div class="mt-3 bg-red-50 p-2 rounded text-xs space-y-1"><div class="font-bold text-red-600 mb-1 border-b border-red-200 pb-1">売却履歴</div>';
-                    item.sales.forEach(s => {
-                        salesHtml += `<div class="flex justify-between text-gray-700"><span>${s.date} <span class="text-gray-500">(${s.quantity}個)</span></span><span class="font-bold">¥${s.price.toLocaleString()}</span></div>`;
+                    salesHtml = '<div class="mt-3 bg-red-50 p-2 rounded text-xs space-y-1 max-h-32 overflow-y-auto"><div class="font-bold text-red-600 mb-1 border-b border-red-200 pb-1">売却履歴</div>';
+                    [...item.sales].reverse().forEach((s, revIdx) => {
+                        const originalIdx = item.sales.length - 1 - revIdx;
+                        const safeName = name.replace(/'/g, "\\'");
+                        salesHtml += `<div class="flex justify-between items-center text-gray-700 hover:bg-red-100 p-1 -mx-1 rounded transition-colors group">
+                            <div class="flex-1"><span>${s.date}</span> <span class="text-gray-500">(${s.quantity}個)</span></div>
+                            <div class="flex items-center gap-1 pl-2">
+                                <span class="font-bold">¥${s.price.toLocaleString()}</span>
+                                <button onclick="openEditRecordModal('${safeName}', 'sale', ${originalIdx})" class="text-red-300 hover:text-red-600 px-2 py-1"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                        </div>`;
                     });
                     salesHtml += '</div>';
                 }
@@ -1207,7 +1290,8 @@
 
                         <div class="flex gap-2 mb-2 items-center">
                             <span class="text-xs font-bold text-blue-600 w-10">相場</span>
-                            <input type="number" id="price-${name}" placeholder="買取相場(円)" class="border rounded p-1 text-sm flex-1 focus:outline-none focus:border-blue-500">
+                            <input type="number" id="price-${name}" placeholder="金額(円)" class="border rounded p-1 text-sm w-20 focus:outline-none focus:border-blue-500">
+                            <input type="text" id="price-store-${name}" placeholder="店舗(任意)" class="border rounded p-1 text-sm flex-1 focus:outline-none focus:border-blue-500">
                             <button onclick="addPriceHistory('${name}')" class="bg-blue-500 text-white text-xs px-3 py-2 rounded font-bold whitespace-nowrap"><i class="fa-solid fa-chart-line mr-1"></i>記録</button>
                         </div>
                         
@@ -1218,7 +1302,10 @@
                             <button onclick="addSale('${name}')" class="bg-red-500 text-white text-xs px-3 py-2 rounded font-bold whitespace-nowrap"><i class="fa-solid fa-yen-sign mr-1"></i>売却</button>
                         </div>
                         
-                        ${salesHtml}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${historyHtml}
+                            ${salesHtml}
+                        </div>
                     </div>
                 `;
                 invList.appendChild(card);
@@ -1280,7 +1367,26 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: true, labels: { boxWidth: 12, font: {size: 10} }, position: 'top' }
+                        legend: { display: true, labels: { boxWidth: 12, font: {size: 10} }, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += '¥' + context.parsed.y.toLocaleString();
+                                    
+                                    if (context.dataset.label === '買取相場(円)') {
+                                        const dateStr = context.label;
+                                        const hList = (item.history || []).filter(x => x.date === dateStr);
+                                        if(hList.length > 0) {
+                                            const h = hList[hList.length - 1];
+                                            if(h.store) label += ` (@${h.store})`;
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         x: { ticks: { font: {size: 10} } },
@@ -1291,6 +1397,7 @@
         }
 
         function updateInventoryQty(name, change) {
+        function updateInventoryQty(name, change) {
             if(state.inventory[name]) {
                 state.inventory[name].quantity += change;
                 if(state.inventory[name].quantity < 0) state.inventory[name].quantity = 0;
@@ -1300,24 +1407,33 @@
 
         function addPriceHistory(name) {
             const priceInput = document.getElementById(`price-${name}`);
+            const storeInput = document.getElementById(`price-store-${name}`);
             const price = parseInt(priceInput.value);
+            const store = storeInput ? storeInput.value.trim() : '';
             if(isNaN(price)) return;
 
             const today = new Date().toISOString().split('T')[0];
             if(!state.inventory[name].history) state.inventory[name].history = [];
             
-            const existingIdx = state.inventory[name].history.findIndex(h => h.date === today);
+            const existingIdx = state.inventory[name].history.findIndex(h => h.date === today && (h.store || '') === store);
             if(existingIdx >= 0) {
                 state.inventory[name].history[existingIdx].price = price;
             } else {
-                state.inventory[name].history.push({ date: today, price: price });
+                state.inventory[name].history.push({ date: today, price: price, store: store });
             }
             
             priceInput.value = '';
+            if(storeInput) storeInput.value = '';
             saveData();
             showToast('相場を記録しました');
             
-            drawInventoryChart(name, state.inventory[name]);
+            renderInventory();
+            const details = document.getElementById(`details-${name}`);
+            if(details) {
+                details.classList.remove('hidden');
+                document.getElementById(`icon-${name}`).classList.replace('fa-chevron-down', 'fa-chevron-up');
+                drawInventoryChart(name, state.inventory[name]);
+            }
         }
 
         function addSale(name) {
@@ -1348,6 +1464,142 @@
                 details.classList.remove('hidden');
                 document.getElementById(`icon-${name}`).classList.replace('fa-chevron-down', 'fa-chevron-up');
                 drawInventoryChart(name, state.inventory[name]);
+            }
+        }
+
+        // --- Record Editing Functions ---
+        function openEditRecordModal(productName, type, index) {
+            const item = state.inventory[productName];
+            if (!item) return;
+
+            document.getElementById('edit-record-product').value = productName;
+            document.getElementById('edit-record-type').value = type;
+            document.getElementById('edit-record-index').value = index;
+
+            if (type === 'history') {
+                const record = item.history[index];
+                document.getElementById('edit-history-date').value = record.date;
+                document.getElementById('edit-history-price').value = record.price;
+                document.getElementById('edit-history-store').value = record.store || '';
+                
+                document.getElementById('edit-history-fields').classList.remove('hidden');
+                document.getElementById('edit-sale-fields').classList.add('hidden');
+                document.getElementById('record-modal-title').innerHTML = '<i class="fa-solid fa-chart-line text-blue-500 mr-2"></i>相場履歴の編集';
+            } else {
+                const record = item.sales[index];
+                document.getElementById('edit-sale-date').value = record.date;
+                document.getElementById('edit-sale-qty').value = record.quantity;
+                document.getElementById('edit-sale-price').value = record.price;
+                
+                document.getElementById('edit-history-fields').classList.add('hidden');
+                document.getElementById('edit-sale-fields').classList.remove('hidden');
+                document.getElementById('record-modal-title').innerHTML = '<i class="fa-solid fa-yen-sign text-red-500 mr-2"></i>売却履歴の編集';
+            }
+
+            const modal = document.getElementById('record-edit-modal');
+            const content = document.getElementById('record-edit-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeEditRecordModal() {
+            const modal = document.getElementById('record-edit-modal');
+            const content = document.getElementById('record-edit-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        function saveEditRecord() {
+            const productName = document.getElementById('edit-record-product').value;
+            const type = document.getElementById('edit-record-type').value;
+            const index = parseInt(document.getElementById('edit-record-index').value);
+
+            const item = state.inventory[productName];
+            if (!item) return;
+
+            if (type === 'history') {
+                const date = document.getElementById('edit-history-date').value;
+                const price = parseInt(document.getElementById('edit-history-price').value);
+                const store = document.getElementById('edit-history-store').value.trim();
+
+                if (!date || isNaN(price)) { alert('日付と金額を正しく入力してください'); return; }
+
+                item.history[index] = { date, price, store };
+                showToast('相場履歴を更新しました');
+            } else {
+                const date = document.getElementById('edit-sale-date').value;
+                const newQty = parseInt(document.getElementById('edit-sale-qty').value);
+                const price = parseInt(document.getElementById('edit-sale-price').value);
+
+                if (!date || isNaN(newQty) || newQty <= 0 || isNaN(price)) { alert('正しく入力してください'); return; }
+
+                const oldQty = item.sales[index].quantity;
+                const diff = oldQty - newQty; // 元の個数から新しい個数を引いた差
+
+                if (diff < 0 && item.quantity < Math.abs(diff)) {
+                    alert('現在の在庫数が足りないため、売却個数をこれ以上増やせません。');
+                    return;
+                }
+
+                item.quantity += diff;
+                item.sales[index] = { date, quantity: newQty, price };
+                showToast('売却履歴を更新しました');
+            }
+
+            // 履歴の日付順にソートし直す
+            if (type === 'history') {
+                item.history.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else {
+                item.sales.sort((a, b) => new Date(a.date) - new Date(b.date));
+            }
+
+            closeEditRecordModal();
+            saveData();
+            renderInventory();
+            
+            // 開いたままにする
+            const details = document.getElementById(`details-${productName}`);
+            if(details) {
+                details.classList.remove('hidden');
+                document.getElementById(`icon-${productName}`).classList.replace('fa-chevron-down', 'fa-chevron-up');
+                drawInventoryChart(productName, item);
+            }
+        }
+
+        async function deleteEditRecord() {
+            const productName = document.getElementById('edit-record-product').value;
+            const type = document.getElementById('edit-record-type').value;
+            const index = parseInt(document.getElementById('edit-record-index').value);
+
+            const confirmed = await customConfirm('履歴の削除', 'この履歴を削除しますか？\n（売却履歴を削除すると、その分の在庫数が元に戻ります）');
+            if (!confirmed) return;
+
+            const item = state.inventory[productName];
+
+            if (type === 'history') {
+                item.history.splice(index, 1);
+                showToast('相場履歴を削除しました');
+            } else {
+                const record = item.sales[index];
+                item.quantity += record.quantity; // 在庫を戻す
+                item.sales.splice(index, 1);
+                showToast('売却履歴を削除し、在庫を戻しました');
+            }
+
+            closeEditRecordModal();
+            saveData();
+            renderInventory();
+            
+            // 開いたままにする
+            const details = document.getElementById(`details-${productName}`);
+            if(details) {
+                details.classList.remove('hidden');
+                document.getElementById(`icon-${productName}`).classList.replace('fa-chevron-down', 'fa-chevron-up');
+                drawInventoryChart(productName, item);
             }
         }
 
@@ -1400,3 +1652,5 @@
     </script>
 </body>
 </html>
+
+```
