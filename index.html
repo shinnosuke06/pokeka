@@ -21,6 +21,72 @@
     <!-- LZString (バックアップ圧縮用) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <style>
+  /* ====== ここからローディング画面のデザイン ====== */
+  body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #121517; 
+  }
+
+  /* 画像をフルスクリーンで表示する設定 */
+  #splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('pokemonmain.png'); /* ここで画像を読み込みます */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 80px;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+  }
+
+  /* くるくる回るスピナー */
+  .loader {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #8cebf9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* LOADINGテキスト */
+  .loading-text {
+    margin-top: 15px;
+    color: #8cebf9;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    animation: blink 1.5s infinite;
+    text-shadow: 0 0 5px rgba(0,0,0,0.8);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* 既存のアプリを最初は見えないように隠す（重要！） */
+  #main-app {
+    display: none;
+  }
+  /* ====== ここまでローディング画面のデザイン ====== */
+
         body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; background-color: #f3f4f6; padding-bottom: 70px; }
         .hidden { display: none !important; }
         
