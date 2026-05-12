@@ -1,0 +1,21 @@
+{
+  "name": "ポケカ抽選管理（セドラー版）",
+  "short_name": "pokeka",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "pokemon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pokemon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
