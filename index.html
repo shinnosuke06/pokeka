@@ -1733,5 +1733,30 @@
     </script>
         </div>
   <!-- ====== 既存のアプリを囲む作業ここまで ====== -->
+      <!-- ====== ここからローディングを1.5秒で消す動き ====== -->
+  <script>
+    window.addEventListener('load', function() {
+      // 1500ミリ秒（1.5秒）後に実行
+      setTimeout(function() {
+        const splash = document.getElementById('splash-screen');
+        const mainApp = document.getElementById('main-app');
+        
+        // メインアプリを表示する
+        mainApp.style.display = 'block';
+        
+        // ローディング画面を透明にする
+        splash.style.opacity = '0';
+        
+        // 透明になった後（0.5秒後）に、完全に裏側から消し去る
+        setTimeout(function() {
+          splash.style.display = 'none';
+        }, 500);
+      }, 1500); 
+    });
+  </script>
+  <!-- ====== ここまでローディングを消す動き ====== -->
+
+</body>
+
 </body>
 </html>
