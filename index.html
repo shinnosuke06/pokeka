@@ -108,6 +108,14 @@
     </style>
 </head>
 <body class="text-gray-800">
+  <!-- ====== ここからローディング画面の要素（bodyのすぐ下に追加） ====== -->
+  <div id="splash-screen">
+    <div class="loader"></div>
+    <p class="loading-text">LOADING...</p>
+  </div>
+  <!-- ====== ここまでローディング画面の要素 ====== -->
+  <!-- ====== 既存のアプリを囲む作業 ====== -->
+  <div id="main-app">
 
     <!-- Header -->
     <header class="bg-red-600 text-white p-4 shadow-md sticky top-0 z-20 relative">
@@ -1723,5 +1731,7 @@
         window.addEventListener('DOMContentLoaded', init);
 
     </script>
+        </div>
+  <!-- ====== 既存のアプリを囲む作業ここまで ====== -->
 </body>
 </html>
