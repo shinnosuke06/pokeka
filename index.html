@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- PWA / iOS Home Screen Settings -->
     <link rel="apple-touch-icon" href="pokemon2.jpg">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -12,12 +13,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ポケカ抽選管理アプリ</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- LZString (バックアップ圧縮用) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     
     <style>
+        /* ====== ローディング画面のデザイン ====== */
         body, html {
             margin: 0;
             padding: 0;
@@ -107,26 +113,35 @@
 
     <div id="main-app">
 
-        <header class="bg-red-600 text-white p-4 shadow-md sticky top-0 z-20 relative">
-            <h1 class="text-xl font-bold text-center"><i class="fa-solid fa-layer-group mr-2"></i>ポケカ抽選管理</h1>
-            <button onclick="showView('manual')" class="absolute right-4 top-4 text-white text-xl hover:text-gray-200" title="使い方マニュアル">
+        <!-- Header -->
+        <header class="bg-red-600 text-white p-4 shadow-md sticky top-0 z-20 flex justify-between items-center relative">
+            <button onclick="showView('backup')" class="text-white text-xl hover:text-gray-200 px-2" title="設定">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <h1 class="text-xl font-bold text-center flex-1"><i class="fa-solid fa-layer-group mr-2"></i>ポケカ抽選管理</h1>
+            <button onclick="showView('manual')" class="text-white text-xl hover:text-gray-200 px-2" title="使い方マニュアル">
                 <i class="fa-solid fa-circle-question"></i>
             </button>
         </header>
 
+        <!-- Main Content -->
         <main class="p-4 max-w-2xl mx-auto pb-20">
             
+            <!-- View: Dashboard -->
             <div id="view-dashboard" class="view-section">
-                <div class="flex items-center mb-4 border-b pb-2 flex-wrap gap-2">
+                
+                <div class="flex items-center mb-4 border-b pb-2 flex-wrap gap-2 justify-between">
                     <h2 class="text-lg font-bold">ダッシュボード</h2>
                     <div id="dashboard-links" class="flex gap-2 hidden flex-wrap"></div>
                 </div>
                 
+                <!-- Tasks -->
                 <div class="mb-6">
                     <h3 class="text-md font-bold mb-2 text-red-600"><i class="fa-solid fa-bell mr-1"></i>直近のタスク</h3>
                     <div id="task-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                 </div>
 
+                <!-- Summary -->
                 <div class="grid grid-cols-3 gap-2 mb-6 text-center">
                     <div class="bg-white p-2 sm:p-3 rounded-lg shadow cursor-pointer hover:bg-gray-50 transition-colors" onclick="goToList('応募完了結果待ち')">
                         <div class="text-[10px] sm:text-xs text-gray-500">結果待ち</div>
@@ -142,6 +157,7 @@
                     </div>
                 </div>
 
+                <!-- Graph Area -->
                 <div class="mb-2 flex justify-between items-center">
                     <h3 class="text-md font-bold"><i class="fa-solid fa-chart-column mr-1"></i>戦績分析（月別・店舗）</h3>
                     <button id="toggle-graph-btn" class="text-xs sm:text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-gray-700">グラフを隠す</button>
@@ -158,10 +174,11 @@
                 </div>
             </div>
 
+            <!-- View: List -->
             <div id="view-list" class="view-section hidden">
                 <div class="flex flex-wrap justify-between items-center mb-4 border-b pb-2 gap-2">
                     <h2 class="text-lg font-bold">抽選一覧</h2>
-                    <div class="flex gap-2 w-full sm:w-auto">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
                         <select id="filter-status" class="w-full sm:w-auto border rounded p-1 text-sm bg-white">
                             <option value="all">すべて</option>
                             <option value="抽選前">抽選前</option>
@@ -175,24 +192,25 @@
                 <div id="lottery-list" class="space-y-4"></div>
             </div>
 
+            <!-- View: Sheets (スプレッドシート自動収集情報) -->
             <div id="view-sheets" class="view-section hidden">
                 <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2">
-                    <h2 class="text-lg font-bold"><i class="fa-solid fa-cloud-arrow-down text-blue-500 mr-1"></i>収集情報ボード</h2>
+                    <h2 class="text-lg font-bold flex items-center"><i class="fa-solid fa-cloud-arrow-down text-blue-500 mr-2"></i>収集情報ボード</h2>
                     <button onclick="fetchSheetData(false)" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-bold shadow flex items-center gap-1">
-                        <i class="fa-solid fa-rotate mr-1"></i>手動更新
+                        <i class="fa-solid fa-rotate mr-1"></i>手動同期
                     </button>
                 </div>
                 
                 <p class="text-[10px] text-gray-500 mb-3">※最新情報を自動で取得・比較します。確認済みやエリア外のものは下部に整理されます。</p>
 
-                <div class="mb-4 flex gap-2">
-                    <input type="text" id="sheet-search" placeholder="商品名や店舗名で検索..." oninput="renderSheetList()" class="flex-1 border rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                <div class="mb-4">
+                    <input type="text" id="sheet-search" placeholder="商品名や店舗名で検索..." oninput="renderSheetList()" class="w-full border rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                 </div>
 
-                <div id="sheet-data-list" class="space-y-4">
-                    </div>
+                <div id="sheet-data-list" class="space-y-4"></div>
             </div>
 
+            <!-- View: Form -->
             <div id="view-form" class="view-section hidden bg-white p-4 rounded-lg shadow">
                 <h2 id="form-title" class="text-lg font-bold mb-4 border-b pb-2">新規登録</h2>
                 <form id="lottery-form" class="space-y-4">
@@ -293,6 +311,7 @@
                 </form>
             </div>
 
+            <!-- View: Inventory -->
             <div id="view-inventory" class="view-section hidden">
                 <h2 class="text-lg font-bold mb-4 border-b pb-2">在庫・相場管理</h2>
                 <div class="bg-gray-800 text-white p-2 sm:p-3 rounded-lg shadow mb-4 grid grid-cols-3 gap-1 sm:gap-2 text-center text-xs">
@@ -312,15 +331,33 @@
                 <div id="inventory-list" class="space-y-4"></div>
             </div>
 
+            <!-- View: Settings & Backup -->
             <div id="view-backup" class="view-section hidden bg-white p-4 rounded-lg shadow">
                 <h2 class="text-lg font-bold mb-4 border-b pb-2">設定・バックアップ</h2>
 
-                <div class="mb-6">
-                    <h3 class="font-bold text-sm mb-2 text-blue-600"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>スプレッドシート連携設定（CSVウェブ公開URL）</h3>
-                    <p class="text-xs text-gray-500 mb-3">Googleスプレッドシートで「ウェブに公開」したCSV公開用リンクを入力すると、アプリ起動時に最新情報を自動更新・閲覧できるようになります。</p>
+                <div class="mb-6 bg-blue-50/50 p-3 sm:p-4 rounded-lg border border-blue-100">
+                    <h3 class="font-bold text-sm mb-2 text-blue-600"><i class="fa-solid fa-cloud-arrow-down mr-1"></i>スプレッドシート連携設定</h3>
+                    <p class="text-xs text-gray-500 mb-3">Googleスプレッドシートで「ウェブに公開」したCSV用URLを設定してください。</p>
                     <div class="space-y-3">
-                        <input type="url" id="setting-spreadsheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" class="border rounded p-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button onclick="saveSpreadsheetUrl()" class="w-full bg-blue-500 text-white py-2 rounded font-bold text-sm">連携URLを保存する</button>
+                        <input type="url" id="setting-spreadsheet-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" class="border rounded p-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <button onclick="saveSpreadsheetUrl()" class="w-full bg-blue-500 text-white py-2 rounded font-bold text-sm shadow transition-all active:scale-95">連携URLを保存する</button>
+                    </div>
+                </div>
+
+                <hr class="my-6">
+
+                <!-- File Backup and Restore -->
+                <div class="mb-6 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
+                    <h3 class="font-bold text-sm mb-2 text-purple-600"><i class="fa-solid fa-file-shield mr-1.5"></i>ファイルのバックアップ・復元</h3>
+                    <p class="text-xs text-gray-500 mb-3">端末にバックアップテキストファイルを保存、または読み込みます。</p>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <button onclick="downloadBackupFile()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs py-2.5 rounded font-bold shadow flex items-center justify-center gap-1 transition-all active:scale-95">
+                            <i class="fa-solid fa-file-arrow-down"></i> ファイルに保存
+                        </button>
+                        <label class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2.5 rounded font-bold shadow flex items-center justify-center gap-1 cursor-pointer text-center transition-all active:scale-95">
+                            <i class="fa-solid fa-file-import"></i> ファイルから復元
+                            <input type="file" id="backup-file-input" accept=".txt" onchange="uploadBackupFile(event)" class="hidden">
+                        </label>
                     </div>
                 </div>
 
@@ -328,7 +365,6 @@
 
                 <div class="mb-6">
                     <h3 class="font-bold text-sm mb-2 text-green-600"><i class="fa-solid fa-link mr-1"></i>ダッシュボードのリンク設定</h3>
-                    <p class="text-xs text-gray-500 mb-3">ホーム画面の見出し右に表示するお気に入りサイトを設定できます。</p>
                     <div class="space-y-3 text-sm">
                         <div class="flex gap-2">
                             <input type="text" id="setting-link1-name" placeholder="ボタン名 (例: ポケセン)" class="border rounded p-2 w-1/3">
@@ -338,34 +374,33 @@
                             <input type="text" id="setting-link2-name" placeholder="ボタン名 (例: スニダン)" class="border rounded p-2 w-1/3">
                             <input type="url" id="setting-link2-url" placeholder="URL (https://...)" class="border rounded p-2 flex-1">
                         </div>
-                        <button onclick="saveSettings()" class="w-full bg-green-500 text-white py-2 rounded font-bold text-sm">リンク設定を保存</button>
+                        <button onclick="saveSettings()" class="w-full bg-green-500 text-white py-2 rounded font-bold text-sm transition-all active:scale-95">リンク設定を保存</button>
                     </div>
                 </div>
 
                 <hr class="my-6">
                 
                 <div class="mb-6">
-                    <h3 class="font-bold text-sm mb-2 text-purple-600"><i class="fa-solid fa-upload mr-1"></i>データの書き出し（バックアップ）</h3>
-                    <p class="text-xs text-gray-500 mb-2">下の文字列をすべてコピーして、スマホのメモ帳やLINEなどに保存してください。</p>
-                    <textarea id="backup-output" rows="4" readonly class="w-full border rounded p-2 text-xs font-mono bg-gray-50 break-all"></textarea>
-                    <button onclick="copyBackup()" class="mt-2 w-full bg-purple-500 text-white py-2 rounded font-bold text-sm"><i class="fa-regular fa-copy mr-1"></i>コピーする</button>
+                    <h3 class="font-bold text-sm mb-2 text-gray-600"><i class="fa-solid fa-copy mr-1"></i>テキストコピペでのバックアップ</h3>
+                    <textarea id="backup-output" rows="3" readonly class="w-full border rounded p-2 text-xs font-mono bg-gray-50 break-all"></textarea>
+                    <button onclick="copyBackup()" class="mt-2 w-full bg-gray-500 text-white py-2 rounded font-bold text-sm transition-all active:scale-95"><i class="fa-regular fa-copy mr-1"></i>文字列をコピー</button>
                 </div>
 
                 <hr class="my-6">
 
                 <div>
-                    <h3 class="font-bold text-sm mb-2 text-red-600"><i class="fa-solid fa-download mr-1"></i>データの読み込み（復元）</h3>
-                    <p class="text-xs text-gray-500 mb-2">保存した文字列を貼り付けて復元します。※現在のデータは上書きされます。</p>
-                    <textarea id="backup-input" rows="4" class="w-full border rounded p-2 text-xs font-mono break-all" placeholder="バックアップ文字列をここにペースト"></textarea>
-                    <button onclick="restoreBackup()" class="mt-2 w-full bg-red-500 text-white py-2 rounded font-bold text-sm"><i class="fa-solid fa-download mr-1"></i>復元する</button>
+                    <h3 class="font-bold text-sm mb-2 text-red-600"><i class="fa-solid fa-paste mr-1"></i>テキスト貼り付けでの復元</h3>
+                    <textarea id="backup-input" rows="3" class="w-full border rounded p-2 text-xs font-mono break-all" placeholder="バックアップ文字列をここに貼り付け"></textarea>
+                    <button onclick="restoreBackup()" class="mt-2 w-full bg-red-500 text-white py-2 rounded font-bold text-sm transition-all active:scale-95"><i class="fa-solid fa-download mr-1"></i>文字列から復元</button>
                 </div>
             </div>
 
+            <!-- View: Manual (使い方) -->
             <div id="view-manual" class="view-section hidden bg-white p-4 rounded-lg shadow space-y-6 text-sm text-gray-700">
                 <h2 class="text-lg font-bold border-b pb-2 text-gray-800"><i class="fa-solid fa-book text-blue-500 mr-2"></i>使い方・マニュアル</h2>
                 <div class="space-y-2 border-t pt-4">
                     <h3 class="font-bold text-red-600"><i class="fa-solid fa-cloud-arrow-down w-5"></i> 収集情報</h3>
-                    <p>・GAS経由でスプレッドシートに収集した入荷Nowの抽選情報をアプリ上で確認できます。</p>
+                    <p>・スプレッドシートに収集した入荷Nowの抽選情報をアプリ上で確認できます。</p>
                     <p>・各抽選カードのステータスを「未確認」「確認済み」「対応済み」「エリア外」に振り分けることができます。</p>
                     <p>・**エリア外**に設定したものは、情報が更新されてもそのままエリア外として下部に表示されます。</p>
                     <p>・**確認済み・対応済み**のものは、スプレッドシート側で情報が変更された場合のみ自動的に「未確認」に戻り、一覧の上部に再浮上します。</p>
@@ -377,24 +412,32 @@
 
         </main>
 
-        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 text-xs text-gray-500 z-20 pb-safe">
+        <!-- Bottom Navigation (追加ボタンが真ん中にあるユーザー指定のレイアウト復活！) -->
+        <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 text-xs text-gray-500 z-20 pb-safe shadow-lg">
             <button onclick="showView('dashboard')" class="nav-btn flex flex-col items-center p-2 w-1/5 text-red-600" data-target="dashboard">
                 <i class="fa-solid fa-home text-lg mb-1"></i>ホーム
             </button>
             <button onclick="goToList('all')" class="nav-btn flex flex-col items-center p-2 w-1/5" data-target="list">
                 <i class="fa-solid fa-list text-lg mb-1"></i>一覧
             </button>
+            
+            <!-- ====== 復活：中央の巨大な「＋登録」ボタン ====== -->
+            <button onclick="openForm()" class="nav-btn flex flex-col items-center p-2 w-1/5 relative" data-target="form">
+                <div class="bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center -mt-6 shadow-lg border-2 border-white transform transition-transform active:scale-95">
+                    <i class="fa-solid fa-plus text-2xl"></i>
+                </div>
+                <span class="mt-1 font-bold text-red-500">登録</span>
+            </button>
+            
             <button onclick="showView('sheets')" class="nav-btn flex flex-col items-center p-2 w-1/5" data-target="sheets">
                 <i class="fa-solid fa-cloud-arrow-down text-lg mb-1"></i>収集情報
             </button>
             <button onclick="showView('inventory')" class="nav-btn flex flex-col items-center p-2 w-1/5" data-target="inventory">
                 <i class="fa-solid fa-box text-lg mb-1"></i>在庫
             </button>
-            <button onclick="showView('backup')" class="nav-btn flex flex-col items-center p-2 w-1/5" data-target="backup">
-                <i class="fa-solid fa-gear text-lg mb-1"></i>設定
-            </button>
         </nav>
 
+        <!-- Master Modal / Edit Modals / Confirm Modal -->
         <div id="master-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 px-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="master-modal-content">
                 <div class="p-4 border-b flex justify-between items-center bg-blue-50">
@@ -411,7 +454,6 @@
                         </div>
                         <button onclick="addMaster()" class="w-full bg-blue-500 text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-600 transition-colors">セットを追加</button>
                     </div>
-                    
                     <h4 class="text-sm font-bold mb-2 text-gray-700 border-b pb-1">登録済みセット</h4>
                     <div id="master-list" class="max-h-48 overflow-y-auto space-y-2 no-scrollbar pb-2"></div>
                 </div>
@@ -513,20 +555,6 @@
     </script>
 
     <script>
-        // --- Security & Helpers ---
-        function escapeJsArg(str) {
-            if(str === null || str === undefined) return '';
-            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
-        }
-        function escapeHtml(str) {
-            if(str === null || str === undefined) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-        function getSafeId(str) {
-            if(!str) return 'id_empty';
-            return 'id_' + encodeURIComponent(str).replace(/%/g, '_').replace(/[^a-zA-Z0-9_]/g, '_');
-        }
-
         // --- State Management ---
         let state = {
             lotteries: [],
@@ -540,7 +568,7 @@
             productMasters: [], 
             isGraphVisible: true,
             sheetItems: [], 
-            sheetMeta: {} // 【追加】収集情報のステータスと更新ハッシュを保存
+            sheetMeta: {} 
         };
         let myChart = null;
         let inventoryCharts = {};
@@ -568,13 +596,11 @@
 
             showView('dashboard');
 
-            // 起動時に自動更新
             if (state.settings.spreadsheetUrl) {
                 fetchSheetData(false, true); 
             }
         }
 
-        // --- Data Persistence ---
         function loadData() {
             const data = localStorage.getItem('pokecaApp_data');
             if (data) {
@@ -585,14 +611,14 @@
                     state.suggests = parsed.suggests || { productName: [], storeName: [], person: [] };
                     state.settings = parsed.settings || { link1: { name: '', url: '' }, link2: { name: '', url: '' }, spreadsheetUrl: '' };
                     state.productMasters = parsed.productMasters || [];
-                    state.sheetMeta = parsed.sheetMeta || {}; // ステータス読み込み
+                    state.sheetMeta = parsed.sheetMeta || {};
                     
                     Object.keys(state.inventory).forEach(key => {
                         if(state.inventory[key].purchasePrice === undefined) state.inventory[key].purchasePrice = 0;
                         if(state.inventory[key].history === undefined) state.inventory[key].history = [];
                         if(state.inventory[key].sales === undefined) state.inventory[key].sales = [];
                     });
-                } catch(e) { console.error("Data load error"); }
+                } catch(e) { console.error("Data load error", e); }
             }
         }
 
@@ -603,7 +629,7 @@
                 suggests: state.suggests,
                 settings: state.settings,
                 productMasters: state.productMasters,
-                sheetMeta: state.sheetMeta // ステータス保存
+                sheetMeta: state.sheetMeta
             }));
             
             if(!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
@@ -611,7 +637,6 @@
             if(!document.getElementById('view-inventory').classList.contains('hidden')) renderInventory();
         }
 
-        // --- UI Navigation ---
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
@@ -633,7 +658,6 @@
                 document.getElementById('setting-link2-name').value = state.settings.link2.name;
                 document.getElementById('setting-link2-url').value = state.settings.link2.url;
                 document.getElementById('setting-spreadsheet-url').value = state.settings.spreadsheetUrl || '';
-                generateBackup();
             }
         }
 
@@ -851,7 +875,19 @@
             state.suggests[key] = list.slice(0, 7);
         }
 
-        // --- Date Helpers ---
+        function escapeJsArg(str) {
+            if(str === null || str === undefined) return '';
+            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+        function escapeHtml(str) {
+            if(str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+        function getSafeId(str) {
+            if(!str) return 'id_empty';
+            return 'id_' + encodeURIComponent(str).replace(/%/g, '_').replace(/[^a-zA-Z0-9_]/g, '_');
+        }
+
         function formatDate(dateStr) {
             if(!dateStr) return '未設定';
             const d = new Date(dateStr);
@@ -871,7 +907,7 @@
             return d.getTime() <= target.getTime();
         }
 
-        // --- Google Spreadsheet CSV Integration (Intelligent Status Management) ---
+        // --- Google Spreadsheet CSV Integration (Direct Fetch + Auto status recovery) ---
         function fetchSheetData(isCacheOnly = false, isSilent = false) {
             const container = document.getElementById('sheet-data-list');
             
@@ -924,7 +960,6 @@
                 });
         }
 
-        // CSV解析と、ステータスの自動更新（ハッシュ比較）ロジック
         function parseCSVDataAndProcessMeta(text) {
             const lines = [];
             let row = [""];
@@ -969,23 +1004,19 @@
 
             const updatedMeta = { ...state.sheetMeta };
             
-            // 各アイテムをハッシュ化して、情報に変更があったかチェック
             parsedItems.forEach(item => {
                 const uniqueKey = item.storeName.trim() + '|||' + item.productName.trim();
                 const dataHash = [item.period, item.announceTime, item.condition, item.receiveMethod, item.lotteryType, item.detailUrl].join('|');
                 
                 if (updatedMeta[uniqueKey]) {
                     const meta = updatedMeta[uniqueKey];
-                    // ハッシュが異なる＝情報が更新された
                     if (meta.hash !== dataHash) {
                         meta.hash = dataHash; 
-                        // 「エリア外」は情報が更新されても維持。それ以外で確認済みのものは「未確認」に戻す
                         if (meta.status !== 'エリア外') {
                             meta.status = '未確認';
                         }
                     }
                 } else {
-                    // 新規アイテム
                     updatedMeta[uniqueKey] = {
                         status: '未確認',
                         hash: dataHash
@@ -995,10 +1026,9 @@
 
             state.sheetMeta = updatedMeta;
             state.sheetItems = parsedItems;
-            saveData(); // メタ情報を保存
+            saveData(); 
         }
 
-        // ステータスを手動で更新する関数
         function updateSheetStatus(uniqueKey, newStatus) {
             if (state.sheetMeta[uniqueKey]) {
                 state.sheetMeta[uniqueKey].status = newStatus;
@@ -1024,14 +1054,12 @@
                 );
             }
 
-            // 【NEW】ステータスに基づく自動ソート（未確認が一番上、エリア外が一番下）
             const statusOrder = { '未確認': 0, '確認済み': 1, '対応済み': 2, 'エリア外': 3 };
             filtered.sort((a, b) => {
                 const keyA = a.storeName.trim() + '|||' + a.productName.trim();
                 const keyB = b.storeName.trim() + '|||' + b.productName.trim();
                 const statA = state.sheetMeta[keyA] ? state.sheetMeta[keyA].status : '未確認';
                 const statB = state.sheetMeta[keyB] ? state.sheetMeta[keyB].status : '未確認';
-                
                 return statusOrder[statA] - statusOrder[statB];
             });
 
@@ -1046,7 +1074,6 @@
                 const currentStatus = meta.status;
                 const safeKey = escapeJsArg(uniqueKey);
 
-                // ステータスに応じたデザイン設定
                 let cardStyle = 'border-blue-500 bg-white opacity-100';
                 if (currentStatus === 'エリア外') {
                     cardStyle = 'border-red-400 bg-gray-50 opacity-60';
@@ -1104,7 +1131,6 @@
             });
         }
 
-        // 収集情報を管理スケジュールにインポート
         function importSheetItem(index) {
             const item = state.sheetItems[index];
             if (!item) return;
@@ -1116,7 +1142,6 @@
             tomorrow.setHours(10, 0, 0, 0);
             
             let announceDateLocal = parseJapaneseDate(item.announceTime, tomorrow);
-            
             let startDateLocal = '';
             if (item.period && item.period.includes('～')) {
                 const parts = item.period.split('～');
@@ -1134,16 +1159,13 @@
             document.getElementById('referenceUrl').value = item.detailUrl || '';
             document.getElementById('memo').value = `【自動インポート】\n申込期間: ${item.period}\n発表日時: ${item.announceTime}\n受取地域・方法: ${item.receiveMethod}\n応募条件: ${item.condition}`;
             
-            // インポート実行と同時にステータスを「対応済み」にする
             if (state.sheetMeta[uniqueKey]) {
                 state.sheetMeta[uniqueKey].status = '対応済み';
                 saveData();
             }
-
             showToast('登録フォームに情報を流し込みました！');
         }
 
-        // 日本語日付文字列の知的パース
         function parseJapaneseDate(str, fallbackDate) {
             if (!str) return fallbackDate ? fallbackDate.toISOString().slice(0, 16) : '';
             try {
@@ -1446,49 +1468,6 @@
         }
 
         // --- Inventory Management ---
-        function addToInventory(productName, purchasePrice = null) {
-            if(!state.inventory[productName]) {
-                state.inventory[productName] = { quantity: 1, purchasePrice: purchasePrice || 0, history: [], sales: [] };
-            } else {
-                state.inventory[productName].quantity++;
-                if(!state.inventory[productName].purchasePrice && purchasePrice) state.inventory[productName].purchasePrice = purchasePrice;
-            }
-        }
-
-        async function deleteInventory(name) {
-            const confirmed = await customConfirm('在庫の削除', `「${name}」の在庫データをすべて削除しますか？\n元に戻すことはできません。`);
-            if(confirmed) {
-                delete state.inventory[name];
-                saveData();
-                showToast('削除しました');
-            }
-        }
-
-        function updatePurchasePrice(name, value) {
-            if(state.inventory[name]) {
-                state.inventory[name].purchasePrice = parseInt(value) || 0;
-                saveData(); 
-            }
-        }
-
-        function toggleInventoryDetails(name) {
-            const safeId = getSafeId(name);
-            const details = document.getElementById(`details-${safeId}`);
-            const icon = document.getElementById(`icon-${safeId}`);
-            if(!details) return; 
-
-            if(details.classList.contains('hidden')) {
-                details.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-                if(!inventoryCharts[name]) drawInventoryChart(name, state.inventory[name]);
-            } else {
-                details.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-        }
-
         function renderInventory() {
             const invList = document.getElementById('inventory-list');
             invList.innerHTML = '';
@@ -1497,7 +1476,6 @@
             inventoryCharts = {};
             
             const keys = Object.keys(state.inventory);
-            
             let totalExpense = 0, totalExpectedProfit = 0, totalRealizedProfit = 0;
 
             keys.forEach(name => {
@@ -1507,7 +1485,6 @@
                 const soldQty = (item.sales || []).reduce((sum, sale) => sum + sale.quantity, 0);
 
                 totalExpense += (item.quantity + soldQty) * purPrice;
-
                 (item.sales || []).forEach(sale => { totalRealizedProfit += (sale.price - purPrice) * sale.quantity; });
                 if (currentPrice > 0 && item.quantity > 0) totalExpectedProfit += (currentPrice - purPrice) * item.quantity;
             });
@@ -1618,45 +1595,85 @@
             });
         }
 
-        function drawInventoryChart(name, item) {
-            const safeId = getSafeId(name);
-            const canvas = document.getElementById(`chart-${safeId}`);
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
-            const allDatesSet = new Set();
-            (item.history || []).forEach(h => allDatesSet.add(h.date));
-            (item.sales || []).forEach(s => allDatesSet.add(s.date));
-            const labels = Array.from(allDatesSet).sort();
-
-            const historyData = labels.map(d => {
-                const h = (item.history || []).find(x => x.date === d);
-                return h ? h.price : null;
-            });
-            const salesData = labels.map(d => {
-                const s = (item.sales || []).find(x => x.date === d);
-                return s ? s.price : null;
-            });
-
-            if(inventoryCharts[name]) inventoryCharts[name].destroy();
-
-            inventoryCharts[name] = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: '相場(円)', data: historyData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1, spanGaps: true, pointRadius: 4 },
-                        { label: '売却(円)', data: salesData, type: 'line', showLine: false, borderColor: '#ef4444', backgroundColor: '#ef4444', pointStyle: 'triangle', pointRadius: 8, pointHoverRadius: 10 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, labels: { boxWidth: 12, font: {size: 10} }, position: 'top' }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) label += ': '; if (context.parsed.y !== null) label += '¥' + context.parsed.y.toLocaleString(); if(context.datasetIndex === 0) { const h = (item.history || []).find(x => x.date === context.label); if(h && h.store) label += ` (${h.store})`; } else if(context.datasetIndex === 1) { const s = (item.sales || []).find(x => x.date === context.label); if(s && s.quantity) label += ` [${s.quantity}個]`; } return label; } } } },
-                    scales: { x: { ticks: { font: {size: 10} } }, y: { beginAtZero: false, ticks: { font: {size: 10} } } }
-                }
-            });
+        // --- File-Based Backup & Restore Logic ---
+        function downloadBackupFile() {
+            try {
+                const dataStr = localStorage.getItem('pokecaApp_data') || '{}';
+                const compressed = 'LZ:' + LZString.compressToBase64(dataStr);
+                
+                const now = new Date();
+                const dateStr = now.getFullYear() + 
+                                String(now.getMonth() + 1).padStart(2, '0') + 
+                                String(now.getDate()).padStart(2, '0');
+                const filename = `pokeca_backup_${dateStr}.txt`;
+                
+                const blob = new Blob([compressed], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showToast('ファイルをダウンロードしました');
+            } catch(e) {
+                alert('バックアップファイル出力失敗: ' + e.toString());
+            }
         }
 
+        function uploadBackupFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const content = e.target.result.trim();
+                if (!content) {
+                    alert('空のファイルです。');
+                    return;
+                }
+                await processRestoreString(content);
+                event.target.value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
+        async function restoreBackup() {
+            const input = document.getElementById('backup-input').value.trim();
+            if(!input) return;
+            await processRestoreString(input);
+            document.getElementById('backup-input').value = '';
+        }
+
+        async function processRestoreString(backupStr) {
+            const confirmed = await customConfirm('復元の確認', '全データが上書き復元されます。よろしいですか？');
+            if(!confirmed) return;
+
+            try {
+                let jsonStr;
+                if (backupStr.startsWith('LZ:')) {
+                    jsonStr = LZString.decompressFromBase64(backupStr.substring(3));
+                } else {
+                    jsonStr = decodeURIComponent(atob(backupStr)); 
+                }
+                
+                if(!jsonStr) throw new Error("Decompression failed");
+                JSON.parse(jsonStr); 
+                
+                localStorage.setItem('pokecaApp_data', jsonStr);
+                loadData();
+                showToast('データを完全復元しました！');
+                showView('dashboard');
+            } catch(e) {
+                alert('無効なデータ形式です。正しいデータを確認してください。');
+                console.error(e);
+            }
+        }
+
+        // --- Core Logics ---
         function updateInventoryQty(name, change) {
             if(state.inventory[name]) {
                 state.inventory[name].quantity += change;
@@ -1665,21 +1682,47 @@
             }
         }
 
+        function drawInventoryChart(name, item) {
+            const safeId = getSafeId(name);
+            const canvas = document.getElementById(`chart-${safeId}`);
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const allDatesSet = new Set();
+            (item.history || []).forEach(h => allDatesSet.add(h.date));
+            (item.sales || []).forEach(s => allDatesSet.add(s.date));
+            const labels = Array.from(allDatesSet).sort();
+            const historyData = labels.map(d => { const h = (item.history || []).find(x => x.date === d); return h ? h.price : null; });
+            const salesData = labels.map(d => { const s = (item.sales || []).find(x => x.date === d); return s ? s.price : null; });
+            if(inventoryCharts[name]) inventoryCharts[name].destroy();
+            inventoryCharts[name] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '相場(円)', data: historyData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1, spanGaps: true, pointRadius: 4 },
+                        { label: '売却(円)', data: salesData, type: 'line', showLine: false, borderColor: '#ef4444', backgroundColor: '#ef4444', pointStyle: 'triangle', pointRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { boxWidth: 12, font: {size: 10} } }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (context.parsed.y !== null) label += '¥' + context.parsed.y.toLocaleString(); if(context.datasetIndex === 0) { const h = (item.history || []).find(x => x.date === context.label); if(h && h.store) label += ` (${h.store})`; } else if(context.datasetIndex === 1) { const s = (item.sales || []).find(x => x.date === context.label); if(s && s.quantity) label += ` [${s.quantity}個]`; } return label; } } } },
+                    scales: { x: { ticks: { font: {size: 10} } }, y: { beginAtZero: false, ticks: { font: {size: 10} } } }
+                }
+            });
+        }
+
         function addPriceHistory(name) {
             const safeId = getSafeId(name);
             const priceInput = document.getElementById(`price-${safeId}`);
             const storeInput = document.getElementById(`price-store-${safeId}`);
-            
             if(!priceInput) return;
             const price = parseInt(priceInput.value);
             const store = storeInput.value.trim();
             if(isNaN(price)) return;
-
             const today = new Date().toISOString().split('T')[0];
             if(!state.inventory[name].history) state.inventory[name].history = [];
             state.inventory[name].history.push({ date: today, price: price, store: store });
             state.inventory[name].history.sort((a,b) => new Date(a.date) - new Date(b.date));
-            
             priceInput.value = ''; storeInput.value = '';
             saveData(); showToast('相場を記録しました');
             drawInventoryChart(name, state.inventory[name]);
@@ -1689,23 +1732,18 @@
             const safeId = getSafeId(name);
             const qtyInput = document.getElementById(`sell-qty-${safeId}`);
             const priceInput = document.getElementById(`sell-price-${safeId}`);
-            
             if(!qtyInput) return;
             const qty = parseInt(qtyInput.value);
             const price = parseInt(priceInput.value);
             if(isNaN(qty) || isNaN(price) || qty <= 0) return;
             if(state.inventory[name].quantity < qty) { alert('在庫数が足りません！'); return; }
-            
             state.inventory[name].quantity -= qty;
             if(!state.inventory[name].sales) state.inventory[name].sales = [];
-            
             const today = new Date().toISOString().split('T')[0];
             state.inventory[name].sales.push({ date: today, quantity: qty, price: price });
             state.inventory[name].sales.sort((a,b) => new Date(a.date) - new Date(b.date));
-            
             qtyInput.value = '1'; priceInput.value = '';
             saveData(); showToast(`${qty}個の売却を記録しました`);
-            
             const detailsElement = document.getElementById(`details-${safeId}`);
             const wasOpen = detailsElement && !detailsElement.classList.contains('hidden');
             renderInventory(); 
@@ -1733,7 +1771,6 @@
             const price = parseInt(document.getElementById('edit-price-val').value);
             const store = document.getElementById('edit-price-store').value.trim();
             if(!date || isNaN(price)) { alert('日付と金額を正しく入力してください'); return; }
-            
             state.inventory[editTarget.name].history[editTarget.index] = { date, price, store };
             state.inventory[editTarget.name].history.sort((a,b) => new Date(a.date) - new Date(b.date));
             saveData(); closeModal('edit-price-modal'); showToast('相場履歴を更新しました');
@@ -1771,11 +1808,9 @@
             const qty = parseInt(document.getElementById('edit-sale-qty').value);
             const price = parseInt(document.getElementById('edit-sale-price').value);
             if(!date || isNaN(qty) || isNaN(price) || qty <= 0) { alert('正しく入力してください'); return; }
-            
             const oldQty = state.inventory[editTarget.name].sales[editTarget.index].quantity;
             const diff = qty - oldQty; 
             if (state.inventory[editTarget.name].quantity - diff < 0) { alert('変更後の個数にすると在庫数がマイナスになります。'); return; }
-            
             state.inventory[editTarget.name].quantity -= diff;
             state.inventory[editTarget.name].sales[editTarget.index] = { date, quantity: qty, price };
             state.inventory[editTarget.name].sales.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -1794,47 +1829,7 @@
             }
         }
 
-        // --- Backup & Restore ---
-        function generateBackup() {
-            const dataStr = localStorage.getItem('pokecaApp_data') || '{}';
-            const compressed = LZString.compressToBase64(dataStr);
-            document.getElementById('backup-output').value = 'LZ:' + compressed;
-        }
-
-        function copyBackup() {
-            const output = document.getElementById('backup-output');
-            output.select();
-            document.execCommand('copy');
-            showToast('コピーしました');
-        }
-
-        async function restoreBackup() {
-            const input = document.getElementById('backup-input').value.trim();
-            if(!input) return;
-
-            const confirmed = await customConfirm('復元の確認', '現在のデータはすべて上書きされます。よろしいですか？');
-            if(confirmed) {
-                try {
-                    let jsonStr;
-                    if (input.startsWith('LZ:')) jsonStr = LZString.decompressFromBase64(input.substring(3));
-                    else jsonStr = decodeURIComponent(atob(input)); 
-                    
-                    if(!jsonStr) throw new Error("Decompression failed");
-                    JSON.parse(jsonStr); 
-                    
-                    localStorage.setItem('pokecaApp_data', jsonStr);
-                    loadData(); showToast('復元が完了しました');
-                    document.getElementById('backup-input').value = '';
-                    showView('dashboard');
-                } catch(e) {
-                    alert('無効なバックアップデータです。文字列が正しくコピーされているか確認してください。');
-                }
-            }
-        }
-
-        // Boot
         window.addEventListener('DOMContentLoaded', init);
-
     </script>
 </body>
 </html>
