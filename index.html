@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <!-- PWA / iOS Home Screen Settings -->
     <link rel="apple-touch-icon" href="pokemon2.jpg">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
@@ -13,17 +12,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ポケカ抽選管理アプリ</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- LZString (バックアップ圧縮用) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     
     <style>
-        /* ====== ここからローディング画面のデザイン ====== */
         body, html {
             margin: 0;
             padding: 0;
@@ -32,14 +26,13 @@
             background-color: #121517; 
         }
 
-        /* 画像をフルスクリーンで表示する設定 */
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('pokemonmain.png'); /* ここで画像を読み込みます */
+            background-image: url('pokemonmain.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -53,7 +46,6 @@
             transition: opacity 0.5s ease-out;
         }
 
-        /* くるくる回るスピナー */
         .loader {
             width: 30px;
             height: 30px;
@@ -67,7 +59,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* LOADINGテキスト */
         .loading-text {
             margin-top: 15px;
             color: #8cebf9;
@@ -83,49 +74,39 @@
             50% { opacity: 0.5; }
         }
 
-        /* 既存のアプリを最初は見えないように隠す（重要！） */
         #main-app {
             display: none;
-            /* bodyの背景色をアプリ用の色に上書き */
             background-color: #f3f4f6; 
             min-height: 100vh;
             padding-bottom: 70px;
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            color: #1f2937; /* text-gray-800 */
+            color: #1f2937; 
         }
-        /* ====== ここまでローディング画面のデザイン ====== */
 
         .hidden { display: none !important; }
         
-        /* スマホでのフォーカス時の自動ズームを防止 */
         input[type="text"], input[type="number"], input[type="datetime-local"], input[type="date"], input[type="url"], select, textarea {
             font-size: 16px !important;
         }
 
-        /* トースト通知のアニメーション */
         @keyframes fadeinout {
             0%, 100% { opacity: 0; transform: translate(-50%, 20px); }
             10%, 90% { opacity: 1; transform: translate(-50%, 0); }
         }
         .toast-show { animation: fadeinout 3s ease-in-out forwards; }
 
-        /* スクロールバーの非表示 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="text-gray-800">
-    <!-- ====== ここからローディング画面の要素（bodyのすぐ下に追加） ====== -->
     <div id="splash-screen">
         <div class="loader"></div>
         <p class="loading-text">LOADING...</p>
     </div>
-    <!-- ====== ここまでローディング画面の要素 ====== -->
 
-    <!-- ====== 既存のアプリを囲む作業 ====== -->
     <div id="main-app">
 
-        <!-- Header -->
         <header class="bg-red-600 text-white p-4 shadow-md sticky top-0 z-20 relative">
             <h1 class="text-xl font-bold text-center"><i class="fa-solid fa-layer-group mr-2"></i>ポケカ抽選管理</h1>
             <button onclick="showView('manual')" class="absolute right-4 top-4 text-white text-xl hover:text-gray-200" title="使い方マニュアル">
@@ -133,29 +114,19 @@
             </button>
         </header>
 
-        <!-- Main Content -->
         <main class="p-4 max-w-2xl mx-auto pb-20">
             
-            <!-- View: Dashboard -->
             <div id="view-dashboard" class="view-section">
-                
                 <div class="flex items-center mb-4 border-b pb-2 flex-wrap gap-2">
                     <h2 class="text-lg font-bold">ダッシュボード</h2>
-                    <!-- Custom Links -->
-                    <div id="dashboard-links" class="flex gap-2 hidden flex-wrap">
-                        <!-- Links will be injected here from settings -->
-                    </div>
+                    <div id="dashboard-links" class="flex gap-2 hidden flex-wrap"></div>
                 </div>
                 
-                <!-- Tasks -->
                 <div class="mb-6">
                     <h3 class="text-md font-bold mb-2 text-red-600"><i class="fa-solid fa-bell mr-1"></i>直近のタスク</h3>
-                    <div id="task-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        <!-- Tasks will be injected here -->
-                    </div>
+                    <div id="task-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- Summary -->
                 <div class="grid grid-cols-3 gap-2 mb-6 text-center">
                     <div class="bg-white p-2 sm:p-3 rounded-lg shadow cursor-pointer hover:bg-gray-50 transition-colors" onclick="goToList('応募完了結果待ち')">
                         <div class="text-[10px] sm:text-xs text-gray-500">結果待ち</div>
@@ -171,17 +142,14 @@
                     </div>
                 </div>
 
-                <!-- Graph Toggle -->
                 <div class="mb-2 flex justify-between items-center">
                     <h3 class="text-md font-bold"><i class="fa-solid fa-chart-column mr-1"></i>戦績分析（月別・店舗）</h3>
                     <button id="toggle-graph-btn" class="text-xs sm:text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-gray-700">グラフを隠す</button>
                 </div>
-                <!-- Graph Area -->
                 <div id="graph-container" class="bg-white p-3 sm:p-4 rounded-lg shadow mb-6 transition-all duration-300">
                     <div class="mb-3">
                         <select id="chart-filter-product" class="w-full border rounded p-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500" onchange="drawChart()">
                             <option value="all">すべての商品</option>
-                            <!-- 動的に商品名が追加されます -->
                         </select>
                     </div>
                     <div class="w-full h-64 mx-auto">
@@ -190,7 +158,6 @@
                 </div>
             </div>
 
-            <!-- View: List -->
             <div id="view-list" class="view-section hidden">
                 <div class="flex flex-wrap justify-between items-center mb-4 border-b pb-2 gap-2">
                     <h2 class="text-lg font-bold">抽選一覧</h2>
@@ -205,33 +172,27 @@
                         </select>
                     </div>
                 </div>
-                <div id="lottery-list" class="space-y-4">
-                    <!-- List items will be injected here -->
-                </div>
+                <div id="lottery-list" class="space-y-4"></div>
             </div>
 
-            <!-- View: Sheets (スプレッドシート自動収集情報) -->
             <div id="view-sheets" class="view-section hidden">
                 <div class="flex flex-wrap justify-between items-center mb-3 border-b pb-2 gap-2">
-                    <h2 class="text-lg font-bold"><i class="fa-solid fa-cloud-arrow-down text-blue-500 mr-1"></i>入荷Now最新情報</h2>
+                    <h2 class="text-lg font-bold"><i class="fa-solid fa-cloud-arrow-down text-blue-500 mr-1"></i>収集情報ボード</h2>
                     <button onclick="fetchSheetData(false)" class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded font-bold shadow flex items-center gap-1">
                         <i class="fa-solid fa-rotate mr-1"></i>手動更新
                     </button>
                 </div>
                 
-                <p class="text-[10px] text-gray-500 mb-3">※スプレッドシートに自動収集したデータを同期します。「追加」ボタンで抽選スケジュールに取り込み可能です。</p>
+                <p class="text-[10px] text-gray-500 mb-3">※最新情報を自動で取得・比較します。確認済みやエリア外のものは下部に整理されます。</p>
 
-                <!-- Search/Filter Bar for Sheets -->
                 <div class="mb-4 flex gap-2">
                     <input type="text" id="sheet-search" placeholder="商品名や店舗名で検索..." oninput="renderSheetList()" class="flex-1 border rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                 </div>
 
                 <div id="sheet-data-list" class="space-y-4">
-                    <!-- CSV items will be injected here -->
-                </div>
+                    </div>
             </div>
 
-            <!-- View: Form -->
             <div id="view-form" class="view-section hidden bg-white p-4 rounded-lg shadow">
                 <h2 id="form-title" class="text-lg font-bold mb-4 border-b pb-2">新規登録</h2>
                 <form id="lottery-form" class="space-y-4">
@@ -247,11 +208,9 @@
                                 <i class="fa-solid fa-box-open mb-1"></i>セット
                             </button>
                         </div>
-                        <!-- Master Select Dropdown -->
                         <div class="mt-1">
                             <select id="master-select" onchange="applyMaster()" class="w-full border rounded p-1 text-xs bg-gray-50 text-gray-600 focus:outline-none border-gray-200">
                                 <option value="">▼ 登録済みセットから自動入力...</option>
-                                <!-- 動的追加 -->
                             </select>
                         </div>
                     </div>
@@ -334,11 +293,8 @@
                 </form>
             </div>
 
-            <!-- View: Inventory -->
             <div id="view-inventory" class="view-section hidden">
                 <h2 class="text-lg font-bold mb-4 border-b pb-2">在庫・相場管理</h2>
-                
-                <!-- Financial Summary -->
                 <div class="bg-gray-800 text-white p-2 sm:p-3 rounded-lg shadow mb-4 grid grid-cols-3 gap-1 sm:gap-2 text-center text-xs">
                     <div>
                         <div class="text-gray-400 mb-1 text-[10px] sm:text-xs">総支出</div>
@@ -353,13 +309,9 @@
                         <div class="font-bold text-xs sm:text-sm truncate" id="summary-realized">¥0</div>
                     </div>
                 </div>
-
-                <div id="inventory-list" class="space-y-4">
-                    <!-- Inventory items will be injected here -->
-                </div>
+                <div id="inventory-list" class="space-y-4"></div>
             </div>
 
-            <!-- View: Settings & Backup -->
             <div id="view-backup" class="view-section hidden bg-white p-4 rounded-lg shadow">
                 <h2 class="text-lg font-bold mb-4 border-b pb-2">設定・バックアップ</h2>
 
@@ -409,54 +361,15 @@
                 </div>
             </div>
 
-            <!-- View: Manual (使い方) -->
             <div id="view-manual" class="view-section hidden bg-white p-4 rounded-lg shadow space-y-6 text-sm text-gray-700">
                 <h2 class="text-lg font-bold border-b pb-2 text-gray-800"><i class="fa-solid fa-book text-blue-500 mr-2"></i>使い方・マニュアル</h2>
-                
-                <div class="space-y-2">
-                    <h3 class="font-bold text-red-600"><i class="fa-solid fa-home w-5"></i> ホーム（ダッシュボード）</h3>
-                    <p>・直近のタスクには、以下の条件に当てはまるものが自動で表示されます。</p>
-                    <ul class="list-disc pl-5 text-gray-600 text-xs space-y-1">
-                        <li><strong>【未応募】</strong>：ステータスが「抽選前」で、抽選開始日時が未設定のもの</li>
-                        <li><strong>【受付開始】</strong>：ステータスが「抽選前」で、抽選開始日時が「今日」または「過去」になったもの</li>
-                        <li><strong>【結果発表】</strong>：ステータスが「応募完了結果待ち」で、当選発表日が「今日」または「過去」になったもの</li>
-                        <li><strong>【期限迫る】</strong>：ステータスが「当選」で、購入期限が「今日から3日以内」のもの</li>
-                    </ul>
-                    <p>・「戦績分析」では、抽選の発表月ごとに、どの店舗で何件の応募があったかを積み上げ棒グラフで確認できます。</p>
-                </div>
-
                 <div class="space-y-2 border-t pt-4">
                     <h3 class="font-bold text-red-600"><i class="fa-solid fa-cloud-arrow-down w-5"></i> 収集情報</h3>
                     <p>・GAS経由でスプレッドシートに収集した入荷Nowの抽選情報をアプリ上で確認できます。</p>
-                    <p>・各抽選カードの<strong>「抽選スケジュールに取り込む」</strong>ボタンを押すと、面倒な文字入力なく一撃でアプリの抽選一覧に組み込めます。スケジュール通知とも完全に自動連動します。</p>
+                    <p>・各抽選カードのステータスを「未確認」「確認済み」「対応済み」「エリア外」に振り分けることができます。</p>
+                    <p>・**エリア外**に設定したものは、情報が更新されてもそのままエリア外として下部に表示されます。</p>
+                    <p>・**確認済み・対応済み**のものは、スプレッドシート側で情報が変更された場合のみ自動的に「未確認」に戻り、一覧の上部に再浮上します。</p>
                 </div>
-
-                <div class="space-y-2 border-t pt-4">
-                    <h3 class="font-bold text-red-600"><i class="fa-solid fa-plus w-5"></i> 登録</h3>
-                    <p>・商品名の横の「セット」ボタンから、「商品名・金額・URL」をまとめて登録できます。登録後は下のプルダウンから選ぶだけで自動入力されます。</p>
-                    <p>・商品名や店舗名は、過去に入力した直近7件もタップ候補として表示されます。</p>
-                    <p>・「購入金額」を入力しておくと、在庫画面での損益計算に自動で利用されます。</p>
-                </div>
-
-                <div class="space-y-2 border-t pt-4">
-                    <h3 class="font-bold text-red-600"><i class="fa-solid fa-list w-5"></i> 一覧</h3>
-                    <p>・各アイテムの下部にあるボタンから、ワンタップで「当選」「落選」などを切り替えられます。</p>
-                    <p>・「購入済にする」を押すと、自動的に在庫画面にアイテムと個数が追加されます。</p>
-                </div>
-
-                <div class="space-y-2 border-t pt-4">
-                    <h3 class="font-bold text-red-600"><i class="fa-solid fa-box w-5"></i> 在庫</h3>
-                    <p>・画面上部に、購入総額（総支出）や、現在の相場に基づく利益情報が表示されます。</p>
-                    <p>・「相場」に現在の買取価格と店舗を入れて「記録」を押すと、グラフの青い線が更新されます。</p>
-                    <p>・「売却」から売った個数と単価を記録すると、在庫が減り、グラフに赤い点で記録が残ります。</p>
-                    <p>・相場・売却の各履歴の横にある「✏️」ボタンから、内容の修正や削除が行えます。</p>
-                </div>
-
-                <div class="space-y-2 border-t pt-4">
-                    <h3 class="font-bold text-red-600"><i class="fa-solid fa-gear w-5"></i> 設定</h3>
-                    <p>・ダッシュボード上部に表示するお気に入りリンクの設定や、データのバックアップ・復元ができます。</p>
-                </div>
-                
                 <div class="pt-4">
                     <button onclick="showView('dashboard')" class="w-full bg-gray-200 text-gray-800 py-2 rounded font-bold">閉じる</button>
                 </div>
@@ -464,7 +377,6 @@
 
         </main>
 
-        <!-- Bottom Navigation -->
         <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-2 text-xs text-gray-500 z-20 pb-safe">
             <button onclick="showView('dashboard')" class="nav-btn flex flex-col items-center p-2 w-1/5 text-red-600" data-target="dashboard">
                 <i class="fa-solid fa-home text-lg mb-1"></i>ホーム
@@ -483,7 +395,6 @@
             </button>
         </nav>
 
-        <!-- Master Modal (商品セット管理) -->
         <div id="master-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 px-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="master-modal-content">
                 <div class="p-4 border-b flex justify-between items-center bg-blue-50">
@@ -502,14 +413,11 @@
                     </div>
                     
                     <h4 class="text-sm font-bold mb-2 text-gray-700 border-b pb-1">登録済みセット</h4>
-                    <div id="master-list" class="max-h-48 overflow-y-auto space-y-2 no-scrollbar pb-2">
-                        <!-- masters go here -->
-                    </div>
+                    <div id="master-list" class="max-h-48 overflow-y-auto space-y-2 no-scrollbar pb-2"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Edit Price Modal (相場履歴編集) -->
         <div id="edit-price-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 px-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="edit-price-modal-content">
                 <div class="p-4 border-b bg-blue-50">
@@ -539,7 +447,6 @@
             </div>
         </div>
 
-        <!-- Edit Sale Modal (売却履歴編集) -->
         <div id="edit-sale-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 px-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="edit-sale-modal-content">
                 <div class="p-4 border-b bg-red-50">
@@ -572,7 +479,6 @@
             </div>
         </div>
 
-        <!-- Custom Confirm Modal -->
         <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[9999] px-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="confirm-modal-content">
                 <div class="p-6">
@@ -586,36 +492,25 @@
             </div>
         </div>
 
-        <!-- Toast Notification -->
         <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded shadow-lg text-sm z-50 opacity-0 pointer-events-none">
             メッセージ
         </div>
 
     </div>
-    <!-- ====== 既存のアプリを囲む作業ここまで ====== -->
-    
-    <!-- ====== ここからローディングを1.5秒で消す動き ====== -->
+
     <script>
         window.addEventListener('load', function() {
-            // 1500ミリ秒（1.5秒）後に実行
             setTimeout(function() {
                 const splash = document.getElementById('splash-screen');
                 const mainApp = document.getElementById('main-app');
-                
-                // メインアプリを表示する
                 mainApp.style.display = 'block';
-                
-                // ローディング画面を透明にする
                 splash.style.opacity = '0';
-                
-                // 透明になった後（0.5秒後）に、完全に裏側から消し去る
                 setTimeout(function() {
                     splash.style.display = 'none';
                 }, 500);
             }, 1500); 
         });
     </script>
-    <!-- ====== ここまでローディングを消す動き ====== -->
 
     <script>
         // --- Security & Helpers ---
@@ -640,11 +535,12 @@
             settings: { 
                 link1: { name: '', url: '' }, 
                 link2: { name: '', url: '' },
-                spreadsheetUrl: '' // スプレッドシート公開用CSV URL
+                spreadsheetUrl: '' 
             },
             productMasters: [], 
             isGraphVisible: true,
-            sheetItems: [] // スプレッドシートから読み込んだ抽選データ
+            sheetItems: [], 
+            sheetMeta: {} // 【追加】収集情報のステータスと更新ハッシュを保存
         };
         let myChart = null;
         let inventoryCharts = {};
@@ -672,9 +568,9 @@
 
             showView('dashboard');
 
-            // アプリ起動時にバックグラウンドでスプレッドシートの情報を自動更新する
+            // 起動時に自動更新
             if (state.settings.spreadsheetUrl) {
-                fetchSheetData(false, true); // true = isSilent (裏でこっそり取得)
+                fetchSheetData(false, true); 
             }
         }
 
@@ -689,6 +585,7 @@
                     state.suggests = parsed.suggests || { productName: [], storeName: [], person: [] };
                     state.settings = parsed.settings || { link1: { name: '', url: '' }, link2: { name: '', url: '' }, spreadsheetUrl: '' };
                     state.productMasters = parsed.productMasters || [];
+                    state.sheetMeta = parsed.sheetMeta || {}; // ステータス読み込み
                     
                     Object.keys(state.inventory).forEach(key => {
                         if(state.inventory[key].purchasePrice === undefined) state.inventory[key].purchasePrice = 0;
@@ -705,7 +602,8 @@
                 inventory: state.inventory,
                 suggests: state.suggests,
                 settings: state.settings,
-                productMasters: state.productMasters
+                productMasters: state.productMasters,
+                sheetMeta: state.sheetMeta // ステータス保存
             }));
             
             if(!document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
@@ -727,7 +625,7 @@
 
             if(viewId === 'dashboard') renderDashboard();
             if(viewId === 'list') renderList();
-            if(viewId === 'sheets') fetchSheetData(true); // キャッシュ優先で表示
+            if(viewId === 'sheets') fetchSheetData(true); 
             if(viewId === 'inventory') renderInventory();
             if(viewId === 'backup') {
                 document.getElementById('setting-link1-name').value = state.settings.link1.name;
@@ -752,7 +650,6 @@
             toast.classList.add('toast-show');
         }
 
-        // --- Generic Modal Handler ---
         function showModal(modalId) {
             const modal = document.getElementById(modalId);
             const content = document.getElementById(`${modalId}-content`);
@@ -773,7 +670,6 @@
             if(modalId === 'master-modal') renderMasterSelect();
         }
 
-        // --- Settings & Links ---
         function saveSettings() {
             state.settings.link1.name = document.getElementById('setting-link1-name').value.trim();
             state.settings.link1.url = document.getElementById('setting-link1-url').value.trim();
@@ -791,7 +687,6 @@
             showToast('スプレッドシート連携URLを設定しました');
         }
 
-        // --- Custom Confirm Modal ---
         function customConfirm(title, message, okText = '実行', okColorClass = 'bg-red-600') {
             return new Promise((resolve) => {
                 const modal = document.getElementById('confirm-modal');
@@ -844,20 +739,13 @@
             
             if(!name) { alert('商品名を入力してください'); return; }
             
-            const newMaster = {
-                id: 'm_' + Date.now(),
-                name: name,
-                price: price,
-                url: url
-            };
-            
+            const newMaster = { id: 'm_' + Date.now(), name, price, url };
             state.productMasters.push(newMaster);
             saveData();
             
             document.getElementById('master-name').value = '';
             document.getElementById('master-price').value = '';
             document.getElementById('master-url').value = '';
-            
             showToast('セットを追加しました');
             renderMasterList();
         }
@@ -871,12 +759,10 @@
         function renderMasterList() {
             const listEl = document.getElementById('master-list');
             listEl.innerHTML = '';
-            
             if(state.productMasters.length === 0) {
                 listEl.innerHTML = '<p class="text-xs text-gray-500 text-center py-2">登録されているセットはありません</p>';
                 return;
             }
-            
             state.productMasters.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center bg-white p-2 rounded border border-gray-200 text-sm';
@@ -897,7 +783,6 @@
         function renderMasterSelect() {
             const selectEl = document.getElementById('master-select');
             selectEl.innerHTML = '<option value="">▼ 登録済みセットから自動入力...</option>';
-            
             state.productMasters.forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m.id;
@@ -912,7 +797,6 @@
             const selectEl = document.getElementById('master-select');
             const id = selectEl.value;
             if(!id) return;
-            
             const master = state.productMasters.find(m => m.id === id);
             if(master) {
                 document.getElementById('productName').value = master.name || '';
@@ -987,10 +871,7 @@
             return d.getTime() <= target.getTime();
         }
 
-        // --- Google Spreadsheet CSV Integration (Direct Fetch) ---
-        /**
-         * isSilentがtrueの場合はバックグラウンドでこっそり取得し、トースト通知等を表示しません。
-         */
+        // --- Google Spreadsheet CSV Integration (Intelligent Status Management) ---
         function fetchSheetData(isCacheOnly = false, isSilent = false) {
             const container = document.getElementById('sheet-data-list');
             
@@ -1015,19 +896,18 @@
                 container.innerHTML = `
                     <div class="text-center py-12 text-gray-500 bg-white rounded shadow-sm">
                         <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-blue-500"></i>
-                        <p class="text-sm">スプレッドシートから最新情報を同期中...</p>
+                        <p class="text-sm">最新情報を同期・解析中...</p>
                     </div>`;
             }
 
-            // 直接fetchを実行します
             fetch(state.settings.spreadsheetUrl)
                 .then(response => {
                     if (!response.ok) throw new Error("HTTP error " + response.status);
                     return response.text();
                 })
                 .then(csvText => {
-                    parseCSVData(csvText);
-                    renderSheetList(); // 裏で読み込んだ場合もDOM自体は更新しておく
+                    parseCSVDataAndProcessMeta(csvText);
+                    renderSheetList();
                     if (!isSilent) showToast('最新情報を同期しました！');
                 })
                 .catch(error => {
@@ -1044,8 +924,8 @@
                 });
         }
 
-        // CSV文字列を配列に変換するパーサー
-        function parseCSVData(text) {
+        // CSV解析と、ステータスの自動更新（ハッシュ比較）ロジック
+        function parseCSVDataAndProcessMeta(text) {
             const lines = [];
             let row = [""];
             let inQuotes = false;
@@ -1054,7 +934,7 @@
                 const c = text[i];
                 const next = text[i+1];
                 if (c === '"') {
-                    if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; } // Escaped quote
+                    if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; } 
                     else { inQuotes = !inQuotes; }
                 } else if (c === ',' && !inQuotes) {
                     row.push("");
@@ -1070,11 +950,11 @@
                 lines.push(row);
             }
 
-            state.sheetItems = [];
+            const parsedItems = [];
             for (let i = 1; i < lines.length; i++) {
                 const cells = lines[i];
                 if (cells.length < 3 || !cells[1] || !cells[2]) continue;
-                state.sheetItems.push({
+                parsedItems.push({
                     addedDate: cells[0] || '',
                     productName: cells[1] || '',
                     storeName: cells[2] || '',
@@ -1085,6 +965,45 @@
                     condition: cells[7] || '',
                     detailUrl: cells[8] || ''
                 });
+            }
+
+            const updatedMeta = { ...state.sheetMeta };
+            
+            // 各アイテムをハッシュ化して、情報に変更があったかチェック
+            parsedItems.forEach(item => {
+                const uniqueKey = item.storeName.trim() + '|||' + item.productName.trim();
+                const dataHash = [item.period, item.announceTime, item.condition, item.receiveMethod, item.lotteryType, item.detailUrl].join('|');
+                
+                if (updatedMeta[uniqueKey]) {
+                    const meta = updatedMeta[uniqueKey];
+                    // ハッシュが異なる＝情報が更新された
+                    if (meta.hash !== dataHash) {
+                        meta.hash = dataHash; 
+                        // 「エリア外」は情報が更新されても維持。それ以外で確認済みのものは「未確認」に戻す
+                        if (meta.status !== 'エリア外') {
+                            meta.status = '未確認';
+                        }
+                    }
+                } else {
+                    // 新規アイテム
+                    updatedMeta[uniqueKey] = {
+                        status: '未確認',
+                        hash: dataHash
+                    };
+                }
+            });
+
+            state.sheetMeta = updatedMeta;
+            state.sheetItems = parsedItems;
+            saveData(); // メタ情報を保存
+        }
+
+        // ステータスを手動で更新する関数
+        function updateSheetStatus(uniqueKey, newStatus) {
+            if (state.sheetMeta[uniqueKey]) {
+                state.sheetMeta[uniqueKey].status = newStatus;
+                saveData();
+                renderSheetList();
             }
         }
 
@@ -1105,54 +1024,78 @@
                 );
             }
 
+            // 【NEW】ステータスに基づく自動ソート（未確認が一番上、エリア外が一番下）
+            const statusOrder = { '未確認': 0, '確認済み': 1, '対応済み': 2, 'エリア外': 3 };
+            filtered.sort((a, b) => {
+                const keyA = a.storeName.trim() + '|||' + a.productName.trim();
+                const keyB = b.storeName.trim() + '|||' + b.productName.trim();
+                const statA = state.sheetMeta[keyA] ? state.sheetMeta[keyA].status : '未確認';
+                const statB = state.sheetMeta[keyB] ? state.sheetMeta[keyB].status : '未確認';
+                
+                return statusOrder[statA] - statusOrder[statB];
+            });
+
             if (filtered.length === 0) {
-                listEl.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm bg-white rounded shadow-sm">該当する抽選情報はありません</p>';
+                listEl.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm bg-white rounded shadow-sm">該当する情報はありません</p>';
                 return;
             }
 
-            // 重複チェック用マップ
-            const registeredMap = {};
-            state.lotteries.forEach(l => {
-                registeredMap[l.storeName.trim() + '|||' + l.productName.trim()] = true;
-            });
-
             filtered.forEach((item, index) => {
-                const isImported = registeredMap[item.storeName.trim() + '|||' + item.productName.trim()] ? true : false;
+                const uniqueKey = item.storeName.trim() + '|||' + item.productName.trim();
+                const meta = state.sheetMeta[uniqueKey] || { status: '未確認' };
+                const currentStatus = meta.status;
+                const safeKey = escapeJsArg(uniqueKey);
+
+                // ステータスに応じたデザイン設定
+                let cardStyle = 'border-blue-500 bg-white opacity-100';
+                if (currentStatus === 'エリア外') {
+                    cardStyle = 'border-red-400 bg-gray-50 opacity-60';
+                } else if (currentStatus === '確認済み' || currentStatus === '対応済み') {
+                    cardStyle = 'border-gray-400 bg-gray-50 opacity-70';
+                }
                 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-lg shadow p-4 border-l-4 transition-all ${isImported ? 'border-gray-300 opacity-60' : 'border-blue-500'}`;
+                card.className = `rounded-lg shadow p-4 border-l-4 transition-all duration-300 ${cardStyle}`;
                 
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-2 flex-wrap gap-1 text-[11px]">
                         <span class="font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">${escapeHtml(item.lotteryType)}</span>
-                        <span class="text-gray-400">収集日: ${escapeHtml(item.addedDate)}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400">更新: ${escapeHtml(item.addedDate)}</span>
+                            <select onchange="updateSheetStatus('${safeKey}', this.value)" class="border border-gray-300 bg-white text-xs rounded p-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="未確認" ${currentStatus==='未確認'?'selected':''}>未確認</option>
+                                <option value="確認済み" ${currentStatus==='確認済み'?'selected':''}>確認済み</option>
+                                <option value="対応済み" ${currentStatus==='対応済み'?'selected':''}>対応済み</option>
+                                <option value="エリア外" ${currentStatus==='エリア外'?'selected':''}>エリア外</option>
+                            </select>
+                        </div>
                     </div>
                     <h3 class="font-bold text-md text-gray-800 mb-1 leading-tight flex items-center gap-1 flex-wrap">
                         <span class="break-all">${escapeHtml(item.productName)}</span>
                     </h3>
                     <p class="text-sm text-gray-700 font-bold mb-2 flex items-center gap-1"><i class="fa-solid fa-store text-blue-400"></i>${escapeHtml(item.storeName)}</p>
                     
-                    <div class="text-xs text-gray-500 space-y-1 bg-gray-50 p-2.5 rounded border border-gray-100">
+                    <div class="text-xs text-gray-500 space-y-1 bg-white/60 p-2.5 rounded border border-gray-200/50">
                         <div><strong class="text-gray-600">受取地域:</strong> ${escapeHtml(item.receiveMethod)}</div>
                         <div><strong class="text-gray-600">受付期間:</strong> ${escapeHtml(item.period)}</div>
                         <div><strong class="text-gray-600">当選発表:</strong> ${escapeHtml(item.announceTime)}</div>
                         <div class="break-all"><strong class="text-gray-600">条件/備考:</strong> ${escapeHtml(item.condition)}</div>
                     </div>
 
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 flex-wrap gap-2">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200/50 flex-wrap gap-2">
                         ${item.detailUrl ? `
                             <a href="${escapeHtml(item.detailUrl)}" target="_blank" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>公式サイトで確認
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>公式サイト
                             </a>
                         ` : '<span class="text-xs text-gray-400">個別リンクなし</span>'}
 
-                        ${isImported ? `
-                            <span class="bg-gray-100 text-gray-400 text-xs px-3 py-2 rounded font-bold flex items-center gap-1 cursor-not-allowed">
-                                <i class="fa-solid fa-circle-check"></i> 登録済み
+                        ${currentStatus === '対応済み' ? `
+                            <span class="bg-gray-200 text-gray-500 text-xs px-3 py-2 rounded font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-check"></i> 登録完了
                             </span>
                         ` : `
-                            <button onclick="importSheetItem(${index})" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-2 rounded font-bold shadow flex items-center gap-1 transition-all">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> 抽選管理に追加
+                            <button onclick="importSheetItem(${index})" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3.5 py-2 rounded font-bold shadow flex items-center gap-1 transition-all active:scale-95">
+                                <i class="fa-solid fa-plus"></i> 追加
                             </button>
                         `}
                     </div>
@@ -1165,6 +1108,8 @@
         function importSheetItem(index) {
             const item = state.sheetItems[index];
             if (!item) return;
+
+            const uniqueKey = item.storeName.trim() + '|||' + item.productName.trim();
 
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1189,35 +1134,34 @@
             document.getElementById('referenceUrl').value = item.detailUrl || '';
             document.getElementById('memo').value = `【自動インポート】\n申込期間: ${item.period}\n発表日時: ${item.announceTime}\n受取地域・方法: ${item.receiveMethod}\n応募条件: ${item.condition}`;
             
+            // インポート実行と同時にステータスを「対応済み」にする
+            if (state.sheetMeta[uniqueKey]) {
+                state.sheetMeta[uniqueKey].status = '対応済み';
+                saveData();
+            }
+
             showToast('登録フォームに情報を流し込みました！');
         }
 
         // 日本語日付文字列の知的パース
         function parseJapaneseDate(str, fallbackDate) {
             if (!str) return fallbackDate ? fallbackDate.toISOString().slice(0, 16) : '';
-            
             try {
                 const year = 2026;
                 let month = 0, day = 0, hour = 10, min = 0;
-
                 const dateMatch = str.match(/(\d+)\s*月\s*(\d+)\s*日/);
                 if (dateMatch) {
                     month = parseInt(dateMatch[1]) - 1; 
                     day = parseInt(dateMatch[2]);
-                    
                     const timeMatch = str.match(/(\d+)\s*[:：]\s*(\d+)/) || str.match(/(\d+)\s*時\s*(\d*)\s*分?/);
                     if (timeMatch) {
                         hour = parseInt(timeMatch[1]);
                         min = parseInt(timeMatch[2]) || 0;
                     }
-                    
                     const parsedDate = new Date(year, month, day, hour, min);
                     return parsedDate.toISOString().slice(0, 16);
                 }
-            } catch(e) {
-                console.warn("Date parse warning: ", e);
-            }
-
+            } catch(e) {}
             return fallbackDate ? fallbackDate.toISOString().slice(0, 16) : '';
         }
 
@@ -1226,7 +1170,6 @@
             const select = document.getElementById('chart-filter-product');
             if(!select) return;
             const currentVal = select.value;
-            
             const products = [...new Set(state.lotteries.map(l => l.productName))].filter(p => p);
             
             select.innerHTML = '<option value="all">すべての商品</option>';
@@ -1236,12 +1179,8 @@
                 opt.textContent = escapeHtml(p);
                 select.appendChild(opt);
             });
-            
-            if (products.includes(currentVal)) {
-                select.value = currentVal;
-            } else {
-                select.value = 'all';
-            }
+            if (products.includes(currentVal)) select.value = currentVal;
+            else select.value = 'all';
         }
 
         function renderDashboard() {
@@ -1265,24 +1204,17 @@
             state.lotteries.forEach(l => {
                 if(l.status === '応募完了結果待ち') {
                     waiting++;
-                    if(isPastOrToday(l.announceDate)) {
-                        tasks.push({ priority: 2, icon: '<i class="fa-solid fa-bullhorn text-blue-500 mr-2 shrink-0"></i>', text: `【結果発表】${escapeHtml(l.productName)}`, id: l.id});
-                    }
+                    if(isPastOrToday(l.announceDate)) tasks.push({ priority: 2, icon: '<i class="fa-solid fa-bullhorn text-blue-500 mr-2 shrink-0"></i>', text: `【結果発表】${escapeHtml(l.productName)}`, id: l.id});
                 }
                 if(l.status === '当選') {
                     win++;
-                    if(l.deadlineDate && isWithinDays(l.deadlineDate, 3)) {
-                        tasks.push({ priority: 1, icon: '<i class="fa-solid fa-clock text-red-500 mr-2 shrink-0"></i>', text: `【期限迫る】${escapeHtml(l.productName)} の入金/購入`, id: l.id});
-                    }
+                    if(l.deadlineDate && isWithinDays(l.deadlineDate, 3)) tasks.push({ priority: 1, icon: '<i class="fa-solid fa-clock text-red-500 mr-2 shrink-0"></i>', text: `【期限迫る】${escapeHtml(l.productName)} の入金/購入`, id: l.id});
                 }
                 if(l.status === '落選') lose++;
 
                 if(l.status === '抽選前') {
-                    if(l.lotteryStartDate && isPastOrToday(l.lotteryStartDate)) {
-                        tasks.push({ priority: 3, icon: '<i class="fa-solid fa-pen-to-square text-green-500 mr-2 shrink-0"></i>', text: `【受付開始】${escapeHtml(l.productName)} (${escapeHtml(l.storeName)})`, id: l.id});
-                    } else if (!l.lotteryStartDate) {
-                        tasks.push({ priority: 4, icon: '<i class="fa-solid fa-circle-exclamation text-orange-400 mr-2 shrink-0"></i>', text: `【未応募】${escapeHtml(l.productName)} (${escapeHtml(l.storeName)})`, id: l.id});
-                    }
+                    if(l.lotteryStartDate && isPastOrToday(l.lotteryStartDate)) tasks.push({ priority: 3, icon: '<i class="fa-solid fa-pen-to-square text-green-500 mr-2 shrink-0"></i>', text: `【受付開始】${escapeHtml(l.productName)} (${escapeHtml(l.storeName)})`, id: l.id});
+                    else if (!l.lotteryStartDate) tasks.push({ priority: 4, icon: '<i class="fa-solid fa-circle-exclamation text-orange-400 mr-2 shrink-0"></i>', text: `【未応募】${escapeHtml(l.productName)} (${escapeHtml(l.storeName)})`, id: l.id});
                 }
             });
 
@@ -1294,9 +1226,8 @@
 
             const taskList = document.getElementById('task-list');
             taskList.innerHTML = '';
-            if(tasks.length === 0) {
-                taskList.innerHTML = '<p class="text-sm text-gray-500 bg-white p-3 rounded">現在直近のタスクはありません。</p>';
-            } else {
+            if(tasks.length === 0) taskList.innerHTML = '<p class="text-sm text-gray-500 bg-white p-3 rounded">現在直近のタスクはありません。</p>';
+            else {
                 tasks.forEach(t => {
                     const safeId = escapeJsArg(t.id);
                     taskList.innerHTML += `<div class="bg-white p-3 rounded shadow text-sm flex items-center cursor-pointer hover:bg-gray-50 border-l-4 ${t.priority===1?'border-red-500':t.priority===2?'border-blue-500':'border-green-500'}" onclick="editLottery('${safeId}')">${t.icon}<span class="truncate block w-full">${t.text}</span></div>`;
@@ -1315,9 +1246,7 @@
             const filterProduct = selectEl ? selectEl.value : 'all';
             
             let targetLotteries = state.lotteries;
-            if (filterProduct !== 'all') {
-                targetLotteries = targetLotteries.filter(l => l.productName === filterProduct);
-            }
+            if (filterProduct !== 'all') targetLotteries = targetLotteries.filter(l => l.productName === filterProduct);
 
             const monthlyStoreData = {}; 
             const storesSet = new Set();
@@ -1327,48 +1256,29 @@
                 const dateObj = new Date(l.announceDate);
                 const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
                 const store = l.storeName || '不明';
-
                 storesSet.add(store);
-
                 if (!monthlyStoreData[monthKey]) monthlyStoreData[monthKey] = {};
                 if (!monthlyStoreData[monthKey][store]) monthlyStoreData[monthKey][store] = 0;
-                
                 monthlyStoreData[monthKey][store]++;
             });
 
             const months = Object.keys(monthlyStoreData).sort();
             const stores = Array.from(storesSet);
-
             const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#f43f5e'];
 
             const datasets = stores.map((store, index) => {
                 const data = months.map(m => monthlyStoreData[m][store] || 0);
-                return {
-                    label: store,
-                    data: data,
-                    backgroundColor: colors[index % colors.length],
-                    borderRadius: 0 
-                };
+                return { label: store, data: data, backgroundColor: colors[index % colors.length], borderRadius: 0 };
             });
 
             if(myChart) myChart.destroy();
-            
             myChart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: months,
-                    datasets: datasets
-                },
+                data: { labels: months, datasets: datasets },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { stacked: true },
-                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
-                    },
-                    plugins: { 
-                        legend: { position: 'top', labels: { boxWidth: 12, font: {size: 10} } } 
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } },
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: {size: 10} } } }
                 }
             });
         }
@@ -1380,10 +1290,7 @@
             listEl.innerHTML = '';
 
             let filtered = state.lotteries;
-            if(filter !== 'all') {
-                filtered = filtered.filter(l => l.status === filter);
-            }
-            
+            if(filter !== 'all') filtered = filtered.filter(l => l.status === filter);
             filtered.sort((a, b) => new Date(a.announceDate || 0) - new Date(b.announceDate || 0));
 
             if(filtered.length === 0) {
@@ -1412,9 +1319,7 @@
                         ${invQty > 0 ? `<span class="inline-block text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full whitespace-nowrap align-middle">在庫: ${invQty}</span>` : ''}
                         ${l.referenceUrl ? `<a href="${escapeHtml(l.referenceUrl)}" target="_blank" class="inline-block text-blue-500 hover:text-blue-700 ml-1"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
                     </h3>
-                    
                     <p class="text-sm text-gray-600 mb-1 break-all"><i class="fa-solid fa-store mr-1 w-4"></i>${escapeHtml(l.storeName)}</p>
-                    
                     ${l.lotteryStartDate ? `<p class="text-xs text-gray-500 mb-1"><i class="fa-solid fa-flag mr-1 w-4"></i>抽選開始: ${formatDate(l.lotteryStartDate)}</p>` : ''}
                     ${l.purchasePrice ? `<p class="text-xs text-gray-500 mb-1"><i class="fa-solid fa-yen-sign mr-1 w-4"></i>購入金額: ${l.purchasePrice.toLocaleString()}円</p>` : ''}
                     ${l.person ? `<p class="text-xs text-gray-500 mb-1 break-all"><i class="fa-solid fa-user mr-1 w-4"></i>対象: ${escapeHtml(l.person)}</p>` : ''}
@@ -1445,14 +1350,11 @@
         function quickUpdate(id, newStatus) {
             const item = state.lotteries.find(l => l.id === id);
             if(!item) return;
-
             item.status = newStatus;
             if(newStatus === '購入済み') {
                 addToInventory(item.productName, item.purchasePrice);
                 showToast('在庫に追加しました');
-            } else {
-                showToast('ステータスを更新しました');
-            }
+            } else { showToast('ステータスを更新しました'); }
             saveData();
         }
 
@@ -1546,17 +1448,10 @@
         // --- Inventory Management ---
         function addToInventory(productName, purchasePrice = null) {
             if(!state.inventory[productName]) {
-                state.inventory[productName] = { 
-                    quantity: 1, 
-                    purchasePrice: purchasePrice || 0,
-                    history: [], 
-                    sales: [] 
-                };
+                state.inventory[productName] = { quantity: 1, purchasePrice: purchasePrice || 0, history: [], sales: [] };
             } else {
                 state.inventory[productName].quantity++;
-                if(!state.inventory[productName].purchasePrice && purchasePrice) {
-                    state.inventory[productName].purchasePrice = purchasePrice;
-                }
+                if(!state.inventory[productName].purchasePrice && purchasePrice) state.inventory[productName].purchasePrice = purchasePrice;
             }
         }
 
@@ -1580,17 +1475,13 @@
             const safeId = getSafeId(name);
             const details = document.getElementById(`details-${safeId}`);
             const icon = document.getElementById(`icon-${safeId}`);
-            
             if(!details) return; 
 
             if(details.classList.contains('hidden')) {
                 details.classList.remove('hidden');
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-up');
-                
-                if(!inventoryCharts[name]) {
-                    drawInventoryChart(name, state.inventory[name]);
-                }
+                if(!inventoryCharts[name]) drawInventoryChart(name, state.inventory[name]);
             } else {
                 details.classList.add('hidden');
                 icon.classList.remove('fa-chevron-up');
@@ -1607,26 +1498,18 @@
             
             const keys = Object.keys(state.inventory);
             
-            let totalExpense = 0;
-            let totalExpectedProfit = 0;
-            let totalRealizedProfit = 0;
+            let totalExpense = 0, totalExpectedProfit = 0, totalRealizedProfit = 0;
 
             keys.forEach(name => {
                 const item = state.inventory[name];
                 const purPrice = item.purchasePrice || 0;
                 const currentPrice = item.history && item.history.length > 0 ? item.history[item.history.length-1].price : 0;
-                
                 const soldQty = (item.sales || []).reduce((sum, sale) => sum + sale.quantity, 0);
 
                 totalExpense += (item.quantity + soldQty) * purPrice;
 
-                (item.sales || []).forEach(sale => {
-                    totalRealizedProfit += (sale.price - purPrice) * sale.quantity;
-                });
-
-                if (currentPrice > 0 && item.quantity > 0) {
-                    totalExpectedProfit += (currentPrice - purPrice) * item.quantity;
-                }
+                (item.sales || []).forEach(sale => { totalRealizedProfit += (sale.price - purPrice) * sale.quantity; });
+                if (currentPrice > 0 && item.quantity > 0) totalExpectedProfit += (currentPrice - purPrice) * item.quantity;
             });
 
             document.getElementById('summary-expense').textContent = `¥${totalExpense.toLocaleString()}`;
@@ -1650,14 +1533,13 @@
                 
                 const jsName = escapeJsArg(name);
                 const htmlName = escapeHtml(name);
-                const safeId = getSafeId(name); // 安全なIDを生成
+                const safeId = getSafeId(name); 
 
                 const currentPrice = item.history && item.history.length > 0 ? item.history[item.history.length-1].price : 0;
                 const purPrice = item.purchasePrice || 0;
                 const profitPerItem = currentPrice - purPrice;
                 const profitColor = profitPerItem > 0 ? 'text-red-500' : (profitPerItem < 0 ? 'text-blue-500' : 'text-gray-500');
                 const sign = profitPerItem > 0 ? '+' : '';
-                
                 const assetPrice = currentPrice > 0 ? currentPrice : purPrice;
                 const assetValue = item.quantity * assetPrice;
 
@@ -1665,14 +1547,7 @@
                 if(item.history && item.history.length > 0) {
                     historyHtml = '<div class="mt-3 bg-blue-50 p-2 rounded text-xs space-y-1"><div class="font-bold text-blue-600 mb-1 border-b border-blue-200 pb-1">相場履歴</div>';
                     item.history.forEach((h, idx) => {
-                        historyHtml += `
-                            <div class="flex justify-between items-center text-gray-700 gap-1 flex-wrap">
-                                <div class="break-all"><span>${h.date}</span> <span class="text-gray-500 ml-1">(${escapeHtml(h.store) || '店舗未設定'})</span></div>
-                                <div class="flex items-center gap-2 ml-auto shrink-0">
-                                    <span class="font-bold">¥${h.price.toLocaleString()}</span>
-                                    <button onclick="openEditPriceModal('${jsName}', ${idx})" class="text-gray-400 hover:text-blue-500 ml-1 px-1"><i class="fa-solid fa-pen"></i></button>
-                                </div>
-                            </div>`;
+                        historyHtml += `<div class="flex justify-between items-center text-gray-700 gap-1 flex-wrap"><div class="break-all"><span>${h.date}</span> <span class="text-gray-500 ml-1">(${escapeHtml(h.store) || '店舗未設定'})</span></div><div class="flex items-center gap-2 ml-auto shrink-0"><span class="font-bold">¥${h.price.toLocaleString()}</span><button onclick="openEditPriceModal('${jsName}', ${idx})" class="text-gray-400 hover:text-blue-500 ml-1 px-1"><i class="fa-solid fa-pen"></i></button></div></div>`;
                     });
                     historyHtml += '</div>';
                 }
@@ -1681,14 +1556,7 @@
                 if(item.sales && item.sales.length > 0) {
                     salesHtml = '<div class="mt-3 bg-red-50 p-2 rounded text-xs space-y-1"><div class="font-bold text-red-600 mb-1 border-b border-red-200 pb-1">売却履歴</div>';
                     item.sales.forEach((s, idx) => {
-                        salesHtml += `
-                            <div class="flex justify-between items-center text-gray-700 flex-wrap">
-                                <div><span>${s.date}</span> <span class="text-gray-500">(${s.quantity}個)</span></div>
-                                <div class="flex items-center gap-2 ml-auto shrink-0">
-                                    <span class="font-bold">¥${s.price.toLocaleString()}</span>
-                                    <button onclick="openEditSaleModal('${jsName}', ${idx})" class="text-gray-400 hover:text-red-500 ml-1 px-1"><i class="fa-solid fa-pen"></i></button>
-                                </div>
-                            </div>`;
+                        salesHtml += `<div class="flex justify-between items-center text-gray-700 flex-wrap"><div><span>${s.date}</span> <span class="text-gray-500">(${s.quantity}個)</span></div><div class="flex items-center gap-2 ml-auto shrink-0"><span class="font-bold">¥${s.price.toLocaleString()}</span><button onclick="openEditSaleModal('${jsName}', ${idx})" class="text-gray-400 hover:text-red-500 ml-1 px-1"><i class="fa-solid fa-pen"></i></button></div></div>`;
                     });
                     salesHtml += '</div>';
                 }
@@ -1742,7 +1610,6 @@
                             </div>
                             <button onclick="addSale('${jsName}')" class="bg-red-500 text-white text-xs px-3 py-2 rounded font-bold whitespace-nowrap shrink-0 ml-auto">売却</button>
                         </div>
-                        
                         ${historyHtml}
                         ${salesHtml}
                     </div>
@@ -1771,66 +1638,21 @@
                 return s ? s.price : null;
             });
 
-            if(inventoryCharts[name]) {
-                inventoryCharts[name].destroy();
-            }
+            if(inventoryCharts[name]) inventoryCharts[name].destroy();
 
             inventoryCharts[name] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: '相場(円)',
-                            data: historyData,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            tension: 0.1,
-                            spanGaps: true,
-                            pointRadius: 4
-                        },
-                        {
-                            label: '売却(円)',
-                            data: salesData,
-                            type: 'line',
-                            showLine: false,
-                            borderColor: '#ef4444',
-                            backgroundColor: '#ef4444',
-                            pointStyle: 'triangle',
-                            pointRadius: 8,
-                            pointHoverRadius: 10
-                        }
+                        { label: '相場(円)', data: historyData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.1, spanGaps: true, pointRadius: 4 },
+                        { label: '売却(円)', data: salesData, type: 'line', showLine: false, borderColor: '#ef4444', backgroundColor: '#ef4444', pointStyle: 'triangle', pointRadius: 8, pointHoverRadius: 10 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, labels: { boxWidth: 12, font: {size: 10} }, position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) label += ': ';
-                                    if (context.parsed.y !== null) label += '¥' + context.parsed.y.toLocaleString();
-                                    
-                                    if(context.datasetIndex === 0) { // history
-                                        const h = (item.history || []).find(x => x.date === context.label);
-                                        if(h && h.store) label += ` (${h.store})`;
-                                    } else if(context.datasetIndex === 1) { // sales
-                                        const s = (item.sales || []).find(x => x.date === context.label);
-                                        if(s && s.quantity) label += ` [${s.quantity}個]`;
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: { ticks: { font: {size: 10} } },
-                        y: { beginAtZero: false, ticks: { font: {size: 10} } }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, labels: { boxWidth: 12, font: {size: 10} }, position: 'top' }, tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) label += ': '; if (context.parsed.y !== null) label += '¥' + context.parsed.y.toLocaleString(); if(context.datasetIndex === 0) { const h = (item.history || []).find(x => x.date === context.label); if(h && h.store) label += ` (${h.store})`; } else if(context.datasetIndex === 1) { const s = (item.sales || []).find(x => x.date === context.label); if(s && s.quantity) label += ` [${s.quantity}個]`; } return label; } } } },
+                    scales: { x: { ticks: { font: {size: 10} } }, y: { beginAtZero: false, ticks: { font: {size: 10} } } }
                 }
             });
         }
@@ -1849,22 +1671,17 @@
             const storeInput = document.getElementById(`price-store-${safeId}`);
             
             if(!priceInput) return;
-
             const price = parseInt(priceInput.value);
             const store = storeInput.value.trim();
             if(isNaN(price)) return;
 
             const today = new Date().toISOString().split('T')[0];
             if(!state.inventory[name].history) state.inventory[name].history = [];
-            
             state.inventory[name].history.push({ date: today, price: price, store: store });
             state.inventory[name].history.sort((a,b) => new Date(a.date) - new Date(b.date));
             
-            priceInput.value = '';
-            storeInput.value = '';
-            saveData();
-            showToast('相場を記録しました');
-            
+            priceInput.value = ''; storeInput.value = '';
+            saveData(); showToast('相場を記録しました');
             drawInventoryChart(name, state.inventory[name]);
         }
 
@@ -1874,15 +1691,10 @@
             const priceInput = document.getElementById(`sell-price-${safeId}`);
             
             if(!qtyInput) return;
-
             const qty = parseInt(qtyInput.value);
             const price = parseInt(priceInput.value);
             if(isNaN(qty) || isNaN(price) || qty <= 0) return;
-            
-            if(state.inventory[name].quantity < qty) {
-                alert('在庫数が足りません！');
-                return;
-            }
+            if(state.inventory[name].quantity < qty) { alert('在庫数が足りません！'); return; }
             
             state.inventory[name].quantity -= qty;
             if(!state.inventory[name].sales) state.inventory[name].sales = [];
@@ -1891,17 +1703,12 @@
             state.inventory[name].sales.push({ date: today, quantity: qty, price: price });
             state.inventory[name].sales.sort((a,b) => new Date(a.date) - new Date(b.date));
             
-            qtyInput.value = '1';
-            priceInput.value = '';
-            
-            saveData();
-            showToast(`${qty}個の売却を記録しました`);
+            qtyInput.value = '1'; priceInput.value = '';
+            saveData(); showToast(`${qty}個の売却を記録しました`);
             
             const detailsElement = document.getElementById(`details-${safeId}`);
             const wasOpen = detailsElement && !detailsElement.classList.contains('hidden');
-            
             renderInventory(); 
-            
             if(wasOpen) {
                 const newDetails = document.getElementById(`details-${safeId}`);
                 if(newDetails) {
@@ -1912,15 +1719,12 @@
             }
         }
 
-        // --- History Editing Modals ---
         function openEditPriceModal(name, index) {
             editTarget = { type: 'price', name: name, index: index };
             const history = state.inventory[name].history[index];
-            
             document.getElementById('edit-price-date').value = history.date;
             document.getElementById('edit-price-val').value = history.price;
             document.getElementById('edit-price-store').value = history.store || '';
-            
             showModal('edit-price-modal');
         }
 
@@ -1928,15 +1732,11 @@
             const date = document.getElementById('edit-price-date').value;
             const price = parseInt(document.getElementById('edit-price-val').value);
             const store = document.getElementById('edit-price-store').value.trim();
-            
             if(!date || isNaN(price)) { alert('日付と金額を正しく入力してください'); return; }
             
             state.inventory[editTarget.name].history[editTarget.index] = { date, price, store };
             state.inventory[editTarget.name].history.sort((a,b) => new Date(a.date) - new Date(b.date));
-            saveData();
-            closeModal('edit-price-modal');
-            showToast('相場履歴を更新しました');
-            
+            saveData(); closeModal('edit-price-modal'); showToast('相場履歴を更新しました');
             setTimeout(() => {
                 const safeId = getSafeId(editTarget.name);
                 const details = document.getElementById(`details-${safeId}`);
@@ -1952,9 +1752,7 @@
             const confirmed = await customConfirm('履歴の削除', 'この相場記録を削除しますか？', '削除', 'bg-red-600');
             if(confirmed) {
                 state.inventory[editTarget.name].history.splice(editTarget.index, 1);
-                saveData();
-                closeModal('edit-price-modal');
-                showToast('削除しました');
+                saveData(); closeModal('edit-price-modal'); showToast('削除しました');
                 setTimeout(() => toggleInventoryDetails(editTarget.name), 50); 
             }
         }
@@ -1962,11 +1760,9 @@
         function openEditSaleModal(name, index) {
             editTarget = { type: 'sale', name: name, index: index };
             const sale = state.inventory[name].sales[index];
-            
             document.getElementById('edit-sale-date').value = sale.date;
             document.getElementById('edit-sale-qty').value = sale.quantity;
             document.getElementById('edit-sale-price').value = sale.price;
-            
             showModal('edit-sale-modal');
         }
 
@@ -1974,23 +1770,16 @@
             const date = document.getElementById('edit-sale-date').value;
             const qty = parseInt(document.getElementById('edit-sale-qty').value);
             const price = parseInt(document.getElementById('edit-sale-price').value);
-            
             if(!date || isNaN(qty) || isNaN(price) || qty <= 0) { alert('正しく入力してください'); return; }
             
             const oldQty = state.inventory[editTarget.name].sales[editTarget.index].quantity;
             const diff = qty - oldQty; 
-            
-            if (state.inventory[editTarget.name].quantity - diff < 0) {
-                alert('変更後の個数にすると在庫数がマイナスになります。');
-                return;
-            }
+            if (state.inventory[editTarget.name].quantity - diff < 0) { alert('変更後の個数にすると在庫数がマイナスになります。'); return; }
             
             state.inventory[editTarget.name].quantity -= diff;
             state.inventory[editTarget.name].sales[editTarget.index] = { date, quantity: qty, price };
             state.inventory[editTarget.name].sales.sort((a,b) => new Date(a.date) - new Date(b.date));
-            saveData();
-            closeModal('edit-sale-modal');
-            showToast('売却履歴を更新しました');
+            saveData(); closeModal('edit-sale-modal'); showToast('売却履歴を更新しました');
             setTimeout(() => toggleInventoryDetails(editTarget.name), 50);
         }
 
@@ -1998,16 +1787,14 @@
             const confirmed = await customConfirm('履歴の削除', 'この売却記録を削除しますか？\n（削除された個数は在庫に戻ります）', '削除', 'bg-red-600');
             if(confirmed) {
                 const sale = state.inventory[editTarget.name].sales[editTarget.index];
-                state.inventory[editTarget.name].quantity += sale.quantity; // 在庫戻す
+                state.inventory[editTarget.name].quantity += sale.quantity; 
                 state.inventory[editTarget.name].sales.splice(editTarget.index, 1);
-                saveData();
-                closeModal('edit-sale-modal');
-                showToast('削除しました');
+                saveData(); closeModal('edit-sale-modal'); showToast('削除しました');
                 setTimeout(() => toggleInventoryDetails(editTarget.name), 50);
             }
         }
 
-        // --- Backup & Restore (LZString Compressed) ---
+        // --- Backup & Restore ---
         function generateBackup() {
             const dataStr = localStorage.getItem('pokecaApp_data') || '{}';
             const compressed = LZString.compressToBase64(dataStr);
@@ -2029,18 +1816,14 @@
             if(confirmed) {
                 try {
                     let jsonStr;
-                    if (input.startsWith('LZ:')) {
-                        jsonStr = LZString.decompressFromBase64(input.substring(3));
-                    } else {
-                        jsonStr = decodeURIComponent(atob(input)); 
-                    }
+                    if (input.startsWith('LZ:')) jsonStr = LZString.decompressFromBase64(input.substring(3));
+                    else jsonStr = decodeURIComponent(atob(input)); 
                     
                     if(!jsonStr) throw new Error("Decompression failed");
                     JSON.parse(jsonStr); 
                     
                     localStorage.setItem('pokecaApp_data', jsonStr);
-                    loadData();
-                    showToast('復元が完了しました');
+                    loadData(); showToast('復元が完了しました');
                     document.getElementById('backup-input').value = '';
                     showView('dashboard');
                 } catch(e) {
